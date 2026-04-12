@@ -7,7 +7,10 @@ All prompts enforce CONCISE output for speed and readability.
 
 CONCISE_RULE = """
 STYLE: Be extremely concise. Use short phrases, not sentences. Every word must earn its place.
-No filler, no preamble, no repetition. Compress aggressively. Return ONLY valid JSON."""
+No filler, no preamble, no repetition. Compress aggressively.
+JSON ONLY. No markdown. No commentary outside the JSON.
+If a field is empty, use [] or "". Never invent extra keys.
+Keep outputs schema-shaped and easy to parse."""
 
 # ---------------------------------------------------------------------------
 # CURIOSITY
@@ -31,6 +34,7 @@ RULES:
 - 2-3 unexplored domains
 - 3-4 high-leverage questions
 - 3-4 branch seeds
+- Use question ids exactly Q1, Q2, Q3, Q4 in order
 - Be specific. "How would a materials scientist frame this?" > "consider other industries"
 {CONCISE_RULE}"""
 
@@ -53,6 +57,7 @@ RULES:
 - Everything must be NEW relative to prior iterations.
 - Be more specific and aggressive than the first pass.
 - Use the Critic's feedback as direct seeds.
+- Use question ids exactly Q1, Q2, Q3, Q4 in order
 {CONCISE_RULE}"""
 
 
@@ -81,10 +86,13 @@ Return JSON:
 
 RULES:
 - 3-5 structurally distinct branches (different domain/metaphor/constraint)
+- Use branch ids exactly B1, B2, B3, B4, B5 in order
 - Prune convergent branches
 - 2-3 cross-pollinated combinations
-- 1+ dead end (honesty)
+- 1-3 dead_ends and each dead_end must be a SHORT STRING, not an object
 - 3-5 final candidates, each unreachable by a single branch
+- Every combination.from must reference existing branch ids
+- If output is weak, still return valid JSON with sparse arrays instead of prose
 {CONCISE_RULE}"""
 
 
@@ -110,6 +118,7 @@ RULES:
 - PASS only if best candidate >= 7 novelty AND >= 7 relevance.
 - On FAIL: at least 2 unexplored_directions + 2 feedback notes.
 - Be rigorous. Genuine novelty is rare.
+- If creativity output is empty, malformed, or generic, return FAIL with concrete repair guidance.
 {CONCISE_RULE}"""
 
 
@@ -138,7 +147,8 @@ def build_creativity_prompt(task: str, curiosity_output: dict) -> str:
         f"Seeds: {json.dumps(seeds)}\n"
         f"Questions: {json.dumps(questions)}\n"
         f"Assumptions: {json.dumps(curiosity_output.get('hidden_assumptions', []))}\n\n"
-        "Explore, cross-pollinate, produce novel candidates."
+        "Explore, cross-pollinate, produce novel candidates. "
+        "Return compact JSON using B1..B5 ids only."
     )
 
 
@@ -147,5 +157,5 @@ def build_critic_prompt(task: str, creativity_output: dict) -> str:
     return (
         f"Task: {task}\n\n"
         f"Creativity output:\n{json.dumps(creativity_output, indent=2)}\n\n"
-        "Score each candidate. Verdict."
+        "Score each candidate. Return compact JSON only. If no viable candidates, FAIL and explain how to repair."
     )

@@ -30,6 +30,84 @@ STAGE_EMOJI = {
 VERDICT_SYMBOL = {"PASS": "✅ PASS", "FAIL": "❌ FAIL"}
 
 
+def _append_advanced_iteration(lines: list[str], iteration: dict):
+    advanced = iteration.get("advanced", {})
+    if not advanced:
+        return
+
+    lines.append("### Advanced Stages")
+    lines.append("")
+
+    cmap = advanced.get("curiosity_map", {})
+    if cmap:
+        lines.append("**Curiosity Map:**")
+        lines.append(
+            f"- novelty={cmap.get('global_novelty_estimate', '?')}/10"
+            f" · branch_budget={cmap.get('branch_budget', '?')}"
+        )
+        for item in cmap.get("curiosity_domains", [])[:5]:
+            lines.append(f"- {item.get('id', '?')}: {item.get('domain', '')} [{item.get('lens', '')}]")
+        lines.append("")
+
+    cexpand = advanced.get("curiosity_expand", {})
+    if cexpand.get("expanded_branches"):
+        lines.append("**Curiosity Expand:**")
+        for item in cexpand["expanded_branches"][:5]:
+            lines.append(
+                f"- {item.get('id', '?')}: {item.get('direction', '')} "
+                f"(strength {item.get('curiosity_strength', '?')}/10)"
+            )
+        lines.append("")
+
+    cdistill = advanced.get("curiosity_distill", {})
+    if cdistill.get("best_questions"):
+        lines.append("**Curiosity Distill:**")
+        for item in cdistill["best_questions"][:4]:
+            lines.append(f"- {item.get('question', '')}")
+        lines.append("")
+
+    research = advanced.get("creativity_research_plan", {})
+    if research.get("creative_tensions"):
+        lines.append("**Creativity Research Plan:**")
+        for item in research["creative_tensions"][:4]:
+            lines.append(f"- {item}")
+        lines.append("")
+
+    branch = advanced.get("creativity_branch", {})
+    if branch.get("branches"):
+        lines.append("**Creativity Branches:**")
+        for item in branch["branches"][:6]:
+            lines.append(f"- {item.get('id', '?')}: {item.get('frame', '')}")
+        lines.append("")
+
+    develop = advanced.get("creativity_develop", [])
+    if develop:
+        lines.append("**Developed Branches:**")
+        for item in develop[:6]:
+            outputs = ", ".join(item.get("branch_outputs", [])[:3])
+            lines.append(f"- {item.get('branch_id', '?')}: {outputs}")
+        lines.append("")
+
+    selection = advanced.get("creativity_selection", {})
+    if selection.get("kept_branch_ids"):
+        lines.append(f"**Selection:** kept {', '.join(selection['kept_branch_ids'])}")
+        lines.append("")
+
+    mixing = advanced.get("creativity_mixing", {})
+    if mixing.get("hybrids"):
+        lines.append("**Combinatory Mixing:**")
+        for item in mixing["hybrids"][:4]:
+            lines.append(f"- {item.get('from_branch_ids', [])} -> {item.get('concept', '')}")
+        lines.append("")
+
+    synthesis = advanced.get("creativity_final_synthesis", {})
+    if synthesis.get("primary_candidates"):
+        lines.append("**Final Synthesis:**")
+        for item in synthesis["primary_candidates"][:4]:
+            lines.append(f"- {item.get('id', '?')}: {item.get('title', '')} | {item.get('concept', '')}")
+        lines.append("")
+
+
 # ---------------------------------------------------------------------------
 # Core converter
 # ---------------------------------------------------------------------------
@@ -185,6 +263,13 @@ def pipeline_to_markdown(data: dict) -> str:
                 for fb in cri["feedback_for_curiosity"]:
                     lines.append(f"- {fb}")
                 lines.append("")
+            if cri.get("feedback_for_creativity"):
+                lines.append("**Feedback for Creativity:**")
+                for fb in cri["feedback_for_creativity"]:
+                    lines.append(f"- {fb}")
+                lines.append("")
+
+        _append_advanced_iteration(lines, iteration)
 
         lines.append("---")
         lines.append("")

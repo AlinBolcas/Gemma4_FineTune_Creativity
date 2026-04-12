@@ -11,8 +11,8 @@ Class: Gemma4
     .generate_fn()                    — returns callable for runner.py
 
 Thinking toggle:
-    g = Gemma4("e2b", thinking=True)          # on by default
-    g.thinking = False                         # toggle at runtime
+    g = Gemma4("e2b", thinking=False)          # off by default
+    g.thinking = True                          # toggle at runtime
     g.chat("explain this", thinking=True)      # override per call
 
 Run as chat TUI:
@@ -74,6 +74,90 @@ def load_gemma4(model: str = DEFAULT_MODEL, **kwargs):
     return g.generate_fn()
 
 
+def load_finetuned_gemma4(
+    adapter_path: str,
+    base_model: str = DEFAULT_MODEL,
+    system: str = "You are a helpful assistant.",
+    thinking: bool = False,
+    use_memory: bool = False,
+    device: Optional[str] = None,
+    max_new_tokens: int = 4096,
+    temperature: float = 1.0,
+    top_p: float = 0.95,
+    top_k: int = 64,
+):
+    """
+    Load a local LoRA adapter on top of a Gemma 4 base model and return
+    a generate_fn(system, user) -> str for evaluation.
+    """
+    model_id = resolve_model_id(base_model)
+    hf_token = os.environ.get("HUGGINGFACE_ACCESS_TOKEN") or os.environ.get("HF_TOKEN")
+    if hf_token:
+        from huggingface_hub import login
+        login(token=hf_token, add_to_git_credential=False)
+
+    dev = device or _detect_device()
+    dtype = _detect_dtype(dev)
+    model_info = MODELS.get(next((k for k, v in MODELS.items() if v["id"] == model_id), ""), {})
+    is_multimodal = model_info.get("multimodal", False)
+
+    from transformers import AutoProcessor
+    from peft import PeftModel
+
+    processor = AutoProcessor.from_pretrained(model_id, token=hf_token)
+    load_kwargs = {"dtype": dtype, "token": hf_token}
+    if dev == "cuda":
+        load_kwargs["device_map"] = "auto"
+
+    if is_multimodal:
+        from transformers import AutoModelForMultimodalLM
+        base = AutoModelForMultimodalLM.from_pretrained(model_id, **load_kwargs)
+    else:
+        from transformers import AutoModelForCausalLM
+        base = AutoModelForCausalLM.from_pretrained(model_id, **load_kwargs)
+
+    if dev == "mps":
+        base = base.to("mps")
+
+    model = PeftModel.from_pretrained(base, adapter_path)
+    model.eval()
+
+    def generate_fn(system_prompt: str, user_prompt: str) -> str:
+        messages = [
+            {"role": "system", "content": system_prompt or system},
+            {"role": "user", "content": user_prompt},
+        ]
+        text = processor.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=thinking,
+        )
+        inputs = processor(text=text, return_tensors="pt").to(model.device)
+        input_len = inputs["input_ids"].shape[-1]
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                top_k=top_k,
+                do_sample=True,
+            )
+        raw_response = processor.decode(outputs[0][input_len:], skip_special_tokens=False)
+        try:
+            parsed = processor.parse_response(raw_response)
+            if isinstance(parsed, dict):
+                return parsed.get("content", parsed.get("thinking", str(parsed)))
+            return str(parsed)
+        except Exception:
+            return processor.decode(outputs[0][input_len:], skip_special_tokens=True)
+
+    generate_fn.model_id = model_id
+    generate_fn.alias = f"finetuned:{Path(adapter_path).name}"
+    return generate_fn
+
+
 # ---------------------------------------------------------------------------
 # Device helpers
 # ---------------------------------------------------------------------------
@@ -113,9 +197,10 @@ class Gemma4:
         model: str = DEFAULT_MODEL,
         system: str = "You are a helpful assistant.",
         thinking: bool = False,
+        use_memory: bool = True,
         device: Optional[str] = None,
-        max_new_tokens: int = 512,
-        temperature: float = 0.1,
+        max_new_tokens: int = 4096,
+        temperature: float = 1.0,
         top_p: float = 0.95,
         top_k: int = 64,
         max_history: int = 40,
@@ -124,6 +209,7 @@ class Gemma4:
         self.alias = next((k for k, v in MODELS.items() if v["id"] == self.model_id), model)
         self.system_message = system
         self.thinking = thinking
+        self.use_memory = use_memory
         self.max_new_tokens = max_new_tokens
         self.temperature = temperature
         self.top_p = top_p
@@ -142,7 +228,7 @@ class Gemma4:
         is_multimodal = model_info.get("multimodal", False)
 
         print(f"\n  Model : {self.alias} ({self.model_id})")
-        print(f"  Device: {dev}  |  dtype: {dtype}  |  multimodal: {is_multimodal}  |  thinking: {thinking}")
+        print(f"  Device: {dev}  |  dtype: {dtype}  |  multimodal: {is_multimodal}  |  thinking: {thinking}  |  memory: {use_memory}")
 
         from transformers import AutoProcessor
 
@@ -207,6 +293,7 @@ class Gemma4:
             return self.generate(system, user)
         fn.model_id = self.model_id
         fn.alias = self.alias
+        fn.owner = self
         return fn
 
     # -------------------------------------------------------------------------
@@ -237,11 +324,12 @@ class Gemma4:
 
         response = self._run(messages, thinking=thinking)
 
-        # Store text-only in history (images not re-sent on follow-ups)
-        self.history.append({"role": "user", "content": message})
-        self.history.append({"role": "assistant", "content": response})
-        if len(self.history) > self.max_history:
-            self.history = self.history[-self.max_history:]
+        # Store text-only in history only when memory is enabled.
+        if self.use_memory:
+            self.history.append({"role": "user", "content": message})
+            self.history.append({"role": "assistant", "content": response})
+            if len(self.history) > self.max_history:
+                self.history = self.history[-self.max_history:]
 
         return response
 
@@ -322,7 +410,10 @@ class Gemma4:
             return self.processor.decode(outputs[0][input_len:], skip_special_tokens=True)
 
     def __repr__(self):
-        return f"Gemma4(alias={self.alias}, thinking={self.thinking}, history={len(self.history)} msgs)"
+        return (
+            f"Gemma4(alias={self.alias}, thinking={self.thinking}, "
+            f"use_memory={self.use_memory}, history={len(self.history)} msgs)"
+        )
 
 
 # ---------------------------------------------------------------------------

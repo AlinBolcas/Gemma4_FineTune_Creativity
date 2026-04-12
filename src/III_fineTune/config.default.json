@@ -1,0 +1,41 @@
+{
+  "run_name": "creative_reasoning_sft",
+  "created_at": "",
+  "notes": "Default fine-tune config. Use the TUI in src/III_fineTune/sft_train.py to create run-specific copies.",
+  "data": {
+    "combined_path": "",
+    "train_path": "",
+    "eval_path": "",
+    "test_path": ""
+  },
+  "model": {
+    "alias": "e2b",
+    "hf_model_id": "google/gemma-4-E2B-it",
+    "unsloth_model_id": "unsloth/gemma-4-E2B-it",
+    "chat_template": "gemma-4",
+    "thinking": false
+  },
+  "training": {
+    "backend": "unsloth",
+    "output_dir": "data/output/models/creative_reasoning_sft",
+    "load_in_4bit": true,
+    "full_finetuning": false,
+    "max_seq_length": 4096,
+    "num_train_epochs": 3,
+    "max_steps": 0,
+    "per_device_train_batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "learning_rate": 0.0002,
+    "warmup_steps": 5,
+    "weight_decay": 0.001,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.0,
+    "seed": 3407,
+    "report_to": "none"
+  },
+  "runtime": {
+    "target": "cloud",
+    "preflight_sample_count": 3
+  }
+}

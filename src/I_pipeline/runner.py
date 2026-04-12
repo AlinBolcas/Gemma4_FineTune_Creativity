@@ -26,7 +26,10 @@ from .prompts import (
     CREATIVITY_SYSTEM, CRITIC_SYSTEM,
     build_curiosity_prompt, build_creativity_prompt, build_critic_prompt,
 )
-from .schema import validate_curiosity, validate_creativity, validate_critic
+from .schema import (
+    validate_curiosity, validate_creativity, validate_critic,
+    normalize_curiosity, normalize_creativity, normalize_critic,
+)
 
 # ---------------------------------------------------------------------------
 # Terminal colors
@@ -193,10 +196,19 @@ def _call_stage(generate_fn, system_prompt, user_prompt, stage_name, verbose) ->
             raw = generate_fn(system_prompt, user_prompt)
             parsed = _extract_json(raw)
             if parsed is not None:
+                parsed = _normalize_stage(stage_name, parsed)
                 errors = _validate_stage(stage_name, parsed)
                 if errors and verbose:
                     print(f"    {YELLOW}[warn] {stage_name}: {errors}{RESET}")
                 return parsed
+            # One repair pass before full retry/fallback.
+            repaired = _repair_json(generate_fn, raw, stage_name, verbose)
+            if repaired is not None:
+                repaired = _normalize_stage(stage_name, repaired)
+                errors = _validate_stage(stage_name, repaired)
+                if errors and verbose:
+                    print(f"    {YELLOW}[warn] repaired {stage_name}: {errors}{RESET}")
+                return repaired
             if verbose:
                 print(f"    {YELLOW}[retry {attempt}] no valid JSON{RESET}")
         except Exception as e:
@@ -238,11 +250,42 @@ def _extract_json(text: str) -> dict | None:
     return None
 
 
+def _repair_json(generate_fn, raw_text: str, stage_name: str, verbose: bool) -> dict | None:
+    """Ask the model to repair malformed output into valid JSON only."""
+    try:
+        repair_system = (
+            "You repair malformed LLM output into valid JSON. "
+            "Return ONLY a valid JSON object. "
+            "Preserve meaning, compress wording, do not add markdown."
+        )
+        repair_user = (
+            f"Stage: {stage_name}\n\n"
+            "Convert the following malformed output into one valid JSON object.\n\n"
+            f"{raw_text}"
+        )
+        repaired_raw = generate_fn(repair_system, repair_user)
+        repaired = _extract_json(repaired_raw)
+        if repaired is not None and verbose:
+            print(f"    {GREY}[repair] recovered valid JSON for {stage_name}{RESET}")
+        return repaired
+    except Exception as e:
+        if verbose:
+            print(f"    {GREY}[repair-failed] {stage_name}: {e}{RESET}")
+        return None
+
+
 def _validate_stage(stage_name, data):
     if stage_name == "curiosity":  return validate_curiosity(data)
     if stage_name == "creativity": return validate_creativity(data)
     if stage_name == "critic":     return validate_critic(data)
     return []
+
+
+def _normalize_stage(stage_name, data):
+    if stage_name == "curiosity":  return normalize_curiosity(data)
+    if stage_name == "creativity": return normalize_creativity(data)
+    if stage_name == "critic":     return normalize_critic(data)
+    return data
 
 
 def _fallback(stage_name: str) -> dict:
@@ -262,24 +305,43 @@ def _tui():
     REPO_ROOT = Path(__file__).resolve().parent.parent.parent
     sys.path.insert(0, str(REPO_ROOT))
 
-    from src.IV_inference.gemma4_integration import load_gemma4, MODELS
+    from src.IV_inference.gemma4_integration import load_gemma4, MODELS as HF_MODELS
+    from src.IV_inference.ollama_integration import load_ollama_gemma4, MODELS as OLLAMA_MODELS
 
     print(f"\n{BOLD}{CYAN}{'='*60}{RESET}")
     print(f"  {BOLD}Pipeline Runner{RESET}")
     print(f"  Curiosity -> Creativity -> Critic")
     print(f"{BOLD}{CYAN}{'='*60}{RESET}")
 
-    # Pick model
-    print(f"\n{YELLOW}Model:{RESET}")
-    aliases = list(MODELS.keys())
-    for i, alias in enumerate(aliases, 1):
-        info = MODELS[alias]
-        default = f" {GREY}<- default{RESET}" if i == 1 else ""
-        print(f"  [{i}] {alias:<5} {info['ram_gb']:>3}GB  {info['description']}{default}")
-    raw = input(f"\n  Choice [1]: ").strip() or "1"
-    model_alias = aliases[int(raw) - 1] if raw.isdigit() and 1 <= int(raw) <= len(aliases) else aliases[0]
+    print(f"\n{YELLOW}Backend:{RESET}")
+    print("  [1] Hugging Face transformers")
+    print("  [2] Ollama local")
+    backend = input("\n  Choice [1]: ").strip() or "1"
 
-    generate_fn = load_gemma4(model=model_alias)
+    if backend == "2":
+        print(f"\n{YELLOW}Ollama model:{RESET}")
+        aliases = list(OLLAMA_MODELS.keys())
+        for i, alias in enumerate(aliases, 1):
+            info = OLLAMA_MODELS[alias]
+            default = f" {GREY}<- default{RESET}" if i == 1 else ""
+            print(f"  [{i}] {alias:<5} {info['id']:<16} {info['description']}{default}")
+        print("  [c] custom local tag")
+        raw = input(f"\n  Choice [1]: ").strip().lower() or "1"
+        if raw == "c":
+            model_alias = input("  Custom Ollama tag: ").strip() or "gemma4:e2b"
+        else:
+            model_alias = aliases[int(raw) - 1] if raw.isdigit() and 1 <= int(raw) <= len(aliases) else aliases[0]
+        generate_fn = load_ollama_gemma4(model=model_alias, thinking=False, use_memory=False)
+    else:
+        print(f"\n{YELLOW}Model:{RESET}")
+        aliases = list(HF_MODELS.keys())
+        for i, alias in enumerate(aliases, 1):
+            info = HF_MODELS[alias]
+            default = f" {GREY}<- default{RESET}" if i == 1 else ""
+            print(f"  [{i}] {alias:<5} {info['ram_gb']:>3}GB  {info['description']}{default}")
+        raw = input(f"\n  Choice [1]: ").strip() or "1"
+        model_alias = aliases[int(raw) - 1] if raw.isdigit() and 1 <= int(raw) <= len(aliases) else aliases[0]
+        generate_fn = load_gemma4(model=model_alias, thinking=False, use_memory=False)
 
     while True:
         print(f"\n{YELLOW}Enter task (or 'q' to quit):{RESET}")

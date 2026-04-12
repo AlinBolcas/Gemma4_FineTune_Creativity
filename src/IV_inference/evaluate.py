@@ -25,6 +25,14 @@ SCAFFOLDED_SYSTEM_PROMPT = (
     "Structure: 1) Curiosity 2) Creativity 3) Critic 4) Final Output"
 )
 
+ADVANCED_SCAFFOLDED_SYSTEM_PROMPT = (
+    "You are a creative reasoning engine. When given a task, use a full staged process: "
+    "1) Curiosity map 2) Curiosity expand 3) Curiosity distill 4) Socratic output "
+    "5) Creativity research plan 6) Creativity branch 7) Develop each branch "
+    "8) Selection and pruning 9) Combinatory mixing 10) Final synthesis 11) Critic.\n\n"
+    "Keep the stages explicit and feed curiosity steering into creativity throughout."
+)
+
 
 def load_eval_prompts(path: Path | None = None) -> list[str]:
     if path is None:
@@ -33,7 +41,39 @@ def load_eval_prompts(path: Path | None = None) -> list[str]:
         return json.load(f).get("eval_held_out", [])
 
 
-def evaluate(generate_fn_vanilla, generate_fn_tuned=None, prompts=None, verbose=True) -> list[dict]:
+def _summarize_pipeline_result(result: dict) -> str:
+    final_output = result.get("final_output", [])
+    verdict = "?"
+    iterations = result.get("loop", [])
+    if iterations:
+        verdict = iterations[-1].get("critic", {}).get("verdict", "?")
+    runner = result.get("_meta", {}).get("runner", "simple")
+    lines = [f"Pipeline runner: {runner}", f"Critic verdict: {verdict}"]
+    if final_output:
+        lines.append("Final output:")
+        for item in final_output:
+            lines.append(f"- {item}")
+    return "\n".join(lines)
+
+
+def _run_eval_mode(generate_fn, prompt: str, mode: str) -> tuple[str, dict | None]:
+    mode = (mode or "prompt_simple").strip().lower()
+    if mode == "prompt_advanced":
+        return generate_fn(ADVANCED_SCAFFOLDED_SYSTEM_PROMPT, prompt), None
+    if mode == "simple_pipeline":
+        from src.I_pipeline.runner import run_loop
+
+        result = run_loop(task=prompt, generate_fn=generate_fn, max_iterations=1, verbose=False)
+        return _summarize_pipeline_result(result), result
+    if mode == "advanced_pipeline":
+        from src.I_pipeline.runner_advanced import run_advanced_loop
+
+        result = run_advanced_loop(task=prompt, generate_fn=generate_fn, max_iterations=1, verbose=False)
+        return _summarize_pipeline_result(result), result
+    return generate_fn(SCAFFOLDED_SYSTEM_PROMPT, prompt), None
+
+
+def evaluate(generate_fn_vanilla, generate_fn_tuned=None, prompts=None, verbose=True, scaffold_mode: str = "prompt_simple") -> list[dict]:
     if prompts is None:
         prompts = load_eval_prompts()
 
@@ -57,7 +97,11 @@ def evaluate(generate_fn_vanilla, generate_fn_tuned=None, prompts=None, verbose=
         # Tier 2: scaffolded
         if verbose:
             print(f"\n  {GREEN}Tier 2: Scaffolded...{RESET}")
-        row["tier2_scaffolded"] = generate_fn_vanilla(SCAFFOLDED_SYSTEM_PROMPT, prompt)
+        tier2_text, tier2_trace = _run_eval_mode(generate_fn_vanilla, prompt, scaffold_mode)
+        row["tier2_scaffolded"] = tier2_text
+        row["tier2_mode"] = scaffold_mode
+        if tier2_trace is not None:
+            row["tier2_trace"] = tier2_trace
         if verbose:
             _print_response("Tier 2", row["tier2_scaffolded"], GREEN)
 
@@ -65,7 +109,18 @@ def evaluate(generate_fn_vanilla, generate_fn_tuned=None, prompts=None, verbose=
         if generate_fn_tuned:
             if verbose:
                 print(f"\n  {MAGENTA}Tier 3: Fine-tuned...{RESET}")
-            row["tier3_tuned"] = generate_fn_tuned("You are a helpful assistant.", prompt)
+            if scaffold_mode in ("simple_pipeline", "advanced_pipeline"):
+                tier3_text, tier3_trace = _run_eval_mode(generate_fn_tuned, prompt, scaffold_mode)
+                row["tier3_tuned"] = tier3_text
+                row["tier3_mode"] = scaffold_mode
+                if tier3_trace is not None:
+                    row["tier3_trace"] = tier3_trace
+            elif scaffold_mode == "prompt_advanced":
+                row["tier3_tuned"] = generate_fn_tuned(ADVANCED_SCAFFOLDED_SYSTEM_PROMPT, prompt)
+                row["tier3_mode"] = scaffold_mode
+            else:
+                row["tier3_tuned"] = generate_fn_tuned("You are a helpful assistant.", prompt)
+                row["tier3_mode"] = "direct"
             if verbose:
                 _print_response("Tier 3", row["tier3_tuned"], MAGENTA)
         else:
@@ -100,7 +155,7 @@ def export_eval(results: list[dict], output_path: Path | None = None):
 # ---------------------------------------------------------------------------
 
 def _tui():
-    from src.IV_inference.gemma4_integration import load_gemma4, MODELS
+    from src.IV_inference.gemma4_integration import load_gemma4, load_finetuned_gemma4, MODELS
 
     print(f"\n{BOLD}{MAGENTA}{'='*60}{RESET}")
     print(f"  {BOLD}3-Tier Evaluation{RESET}")
@@ -119,6 +174,22 @@ def _tui():
 
     generate_fn = load_gemma4(model=model_alias)
 
+    tuned_fn = None
+    print(f"\n{YELLOW}Include fine-tuned adapter in Tier 3? [y/N]{RESET}")
+    if input("  > ").strip().lower() in ("y", "yes"):
+        models_dir = REPO_ROOT / "data" / "output" / "models"
+        adapter_dirs = [p for p in sorted(models_dir.glob("*")) if p.is_dir()]
+        if not adapter_dirs:
+            print(f"  {YELLOW}No adapter dirs found in data/output/models/{RESET}")
+        else:
+            print(f"\n{YELLOW}Available adapters:{RESET}")
+            for i, path in enumerate(adapter_dirs, 1):
+                print(f"  [{i}] {path.name}")
+            raw = input(f"\n  Choice [1]: ").strip() or "1"
+            idx = int(raw) - 1 if raw.isdigit() and 1 <= int(raw) <= len(adapter_dirs) else 0
+            adapter_path = adapter_dirs[idx]
+            tuned_fn = load_finetuned_gemma4(str(adapter_path), base_model=model_alias)
+
     # Prompts
     prompts = load_eval_prompts()
     print(f"\n{YELLOW}Eval prompts:{RESET}")
@@ -133,12 +204,26 @@ def _tui():
     else:
         selected = prompts
 
+    print(f"\n{YELLOW}Tier 2/Tier 3 scaffold mode:{RESET}")
+    print("  [1] prompt scaffold (simple)")
+    print("  [2] prompt scaffold (advanced)")
+    print("  [3] simple pipeline runner")
+    print("  [4] advanced pipeline runner")
+    scaffold_raw = input("\n  Choice [1]: ").strip() or "1"
+    scaffold_mode = {
+        "1": "prompt_simple",
+        "2": "prompt_advanced",
+        "3": "simple_pipeline",
+        "4": "advanced_pipeline",
+    }.get(scaffold_raw, "prompt_simple")
+
     # Run
     results = evaluate(
         generate_fn_vanilla=generate_fn,
-        generate_fn_tuned=None,
+        generate_fn_tuned=tuned_fn,
         prompts=selected,
         verbose=True,
+        scaffold_mode=scaffold_mode,
     )
     export_eval(results)
     print(f"\n  {GREEN}Evaluation complete: {len(results)} prompts.{RESET}")

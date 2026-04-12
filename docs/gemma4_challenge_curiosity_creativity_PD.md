@@ -11,6 +11,8 @@ https://unsloth.ai/docs/models/gemma-4
 https://unsloth.ai/docs/models/gemma-4#run-gemma-4-tutorials
 https://unsloth.ai/docs/models/gemma-4/train
 
+https://www.kaggle.com/docs/notebooks
+
 ---
 
 ## Executive Summary

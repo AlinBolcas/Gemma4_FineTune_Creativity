@@ -27,3 +27,4 @@ kagglehub
 python-dotenv
 torchvision
 plotly
+ollama
