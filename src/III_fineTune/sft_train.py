@@ -481,11 +481,19 @@ def _train_unsloth(config: dict):
     print("\nStarting Unsloth training...")
     train_result = trainer.train()
     train_metrics = getattr(train_result, "metrics", {}) or {}
-    eval_metrics = trainer.evaluate() if eval_dataset is not None else {}
 
+    # Save adapter immediately after training so post-train eval issues never lose the run.
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
     print(f"{GREEN}Saved model:{RESET} {output_dir}")
+
+    eval_metrics = {}
+    if eval_dataset is not None:
+        try:
+            eval_metrics = trainer.evaluate()
+        except Exception as e:
+            eval_metrics = {"eval_skipped": True, "error": str(e)}
+            print(f"{YELLOW}Post-train eval skipped:{RESET} {e}")
 
     _safe_json_dump(run_dir / "train_metrics.json", train_metrics)
     _safe_json_dump(run_dir / "eval_metrics.json", eval_metrics)
@@ -589,10 +597,18 @@ def _train_transformers(config: dict):
     print("\nStarting transformers QLoRA training...")
     train_result = trainer.train()
     train_metrics = getattr(train_result, "metrics", {}) or {}
-    eval_metrics = trainer.evaluate() if eval_dataset is not None else {}
+
     trainer.save_model(output_dir)
     processor.save_pretrained(output_dir)
     print(f"{GREEN}Saved model:{RESET} {output_dir}")
+
+    eval_metrics = {}
+    if eval_dataset is not None:
+        try:
+            eval_metrics = trainer.evaluate()
+        except Exception as e:
+            eval_metrics = {"eval_skipped": True, "error": str(e)}
+            print(f"{YELLOW}Post-train eval skipped:{RESET} {e}")
 
     _safe_json_dump(run_dir / "train_metrics.json", train_metrics)
     _safe_json_dump(run_dir / "eval_metrics.json", eval_metrics)
