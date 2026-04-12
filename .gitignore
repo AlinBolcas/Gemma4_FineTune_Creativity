@@ -142,6 +142,9 @@ venv_mac/
 ENV/
 env.bak/
 venv.bak/
+/archive/
+/archive
+archive/
 
 # Spyder project settings
 .spyderproject

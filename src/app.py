@@ -1,9 +1,9 @@
 """
-app.py — PSYCHE demo entry point.
+app.py - Creative reasoning demo entry point.
 
 Two tabs:
-  1. Pipeline  — run Curiosity → Creativity → Critic, stages update live
-  2. Compare   — pipeline vs vanilla side-by-side on the same task
+  1. Pipeline  - run Curiosity + Creativity + Critic, stages update live
+  2. Compare   - pipeline vs vanilla side-by-side on the same task
 
 Run:
     python src/app.py
@@ -33,7 +33,7 @@ def _model_loaded() -> bool:
 
 def _require_model():
     if not _model_loaded():
-        raise gr.Error("Load a model first — use the model bar above.")
+        raise gr.Error("Load a model first. Use the model bar above.")
 
 
 # ---------------------------------------------------------------------------
@@ -123,16 +123,16 @@ def run_pipeline(task: str, max_iters: int) -> Generator:
 
     for it in range(1, int(max_iters) + 1):
         # Curiosity
-        yield "_generating..._", "_waiting..._", "_waiting..._", "", f"Iteration {it} — Curiosity..."
+        yield "_generating..._", "_waiting..._", "_waiting..._", "", f"Iteration {it}: Curiosity..."
         c_sys = CURIOSITY_SYSTEM_WITH_FEEDBACK if critic_feedback else CURIOSITY_SYSTEM
         curiosity = _call_stage(fn, c_sys, build_curiosity_prompt(task, critic_feedback), "curiosity", False)
 
         # Creativity
-        yield _fmt_curiosity(curiosity), "_generating..._", "_waiting..._", "", f"Iteration {it} — Creativity..."
+        yield _fmt_curiosity(curiosity), "_generating..._", "_waiting..._", "", f"Iteration {it}: Creativity..."
         creativity = _call_stage(fn, CREATIVITY_SYSTEM, build_creativity_prompt(task, curiosity), "creativity", False)
 
         # Critic
-        yield _fmt_curiosity(curiosity), _fmt_creativity(creativity), "_generating..._", "", f"Iteration {it} — Critic..."
+        yield _fmt_curiosity(curiosity), _fmt_creativity(creativity), "_generating..._", "", f"Iteration {it}: Critic..."
         critic = _call_stage(fn, CRITIC_SYSTEM, build_critic_prompt(task, creativity), "critic", False)
 
         loop_trace.append({"iteration": it, "curiosity": curiosity, "creativity": creativity, "critic": critic})
@@ -140,7 +140,7 @@ def run_pipeline(task: str, max_iters: int) -> Generator:
         final_md = "## Final Output\n" + "\n".join(f"- **{o}**" for o in creativity.get("output", []))
 
         yield _fmt_curiosity(curiosity), _fmt_creativity(creativity), _fmt_critic(critic), final_md, \
-              f"Iteration {it} — {verdict}"
+              f"Iteration {it}: {verdict}"
 
         if verdict == "PASS":
             break
@@ -158,7 +158,7 @@ def run_pipeline(task: str, max_iters: int) -> Generator:
     )
     verdict = last["critic"].get("verdict", "?")
     yield _fmt_curiosity(last["curiosity"]), _fmt_creativity(last["creativity"]), \
-          _fmt_critic(last["critic"]), final_md, f"Done — {verdict} in {elapsed}s"
+          _fmt_critic(last["critic"]), final_md, f"Done: {verdict} in {elapsed}s"
 
 
 # ---------------------------------------------------------------------------
@@ -218,10 +218,10 @@ EXAMPLES = [
 
 
 def build_app() -> gr.Blocks:
-    with gr.Blocks(title="PSYCHE — Creative Reasoning") as app:
+    with gr.Blocks(title="Gemma 4 Creative Reasoning") as app:
 
         # ---------- Model bar ----------
-        gr.Markdown("# PSYCHE\n**Curiosity → Creativity → Critic** · Gemma 4")
+        gr.Markdown("# Gemma 4 Creative Reasoning\n**Curiosity + Creativity + Critic**")
         with gr.Row(elem_classes="model-bar"):
             model_drop = gr.Dropdown(
                 choices=["e2b", "e4b", "26b", "31b"],
@@ -287,7 +287,7 @@ def build_app() -> gr.Blocks:
             # ── Tab 2: Compare ───────────────────────────────────────────
             with gr.Tab("Compare"):
                 gr.Markdown(
-                    "Same task — vanilla Gemma 4 vs the pipeline. "
+                    "Same task: vanilla Gemma 4 vs the pipeline. "
                     "Pipeline runs one iteration for speed."
                 )
                 compare_task = gr.Textbox(
