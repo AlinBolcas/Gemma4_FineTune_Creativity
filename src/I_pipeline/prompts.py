@@ -92,6 +92,8 @@ RULES:
 - 1-3 dead_ends and each dead_end must be a SHORT STRING, not an object
 - 3-5 final candidates, each unreachable by a single branch
 - Every combination.from must reference existing branch ids
+- Avoid vague platform ideas, generic wrappers, buzzword-heavy phrasing, and broad categories with no sharp mechanism
+- Prefer concrete, non-obvious, specific concepts that clearly differ in structure, not just wording
 - If output is weak, still return valid JSON with sparse arrays instead of prose
 {CONCISE_RULE}"""
 
@@ -115,7 +117,11 @@ Return JSON:
 
 RULES:
 - Score EVERY candidate. Most ideas score 4-6 on novelty.
-- PASS only if best candidate >= 7 novelty AND >= 7 relevance.
+- Score 8+ novelty only for rare, sharp, non-obvious ideas with clear specificity.
+- Penalize vague, general, buzzword-heavy, obvious, or lightly remixed ideas.
+- Penalize candidates that sound impressive but could fit many unrelated tasks with minimal change.
+- Borderline 7/10 novelty should usually FAIL unless the idea is clearly specific and structurally surprising.
+- PASS only if at least one candidate >= 8 novelty AND >= 8 relevance.
 - On FAIL: at least 2 unexplored_directions + 2 feedback notes.
 - Be rigorous. Genuine novelty is rare.
 - If creativity output is empty, malformed, or generic, return FAIL with concrete repair guidance.

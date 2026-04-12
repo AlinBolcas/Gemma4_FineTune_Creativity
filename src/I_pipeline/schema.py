@@ -68,8 +68,15 @@ REQUIRED_CURIOSITY_KEYS = {"hidden_assumptions", "unexplored_domains", "question
 REQUIRED_CREATIVITY_KEYS = {"research", "branches", "output"}
 REQUIRED_CRITIC_KEYS = {"scores", "verdict"}
 
-PASS_THRESHOLD_NOVELTY = 7
-PASS_THRESHOLD_RELEVANCE = 7
+PASS_THRESHOLD_NOVELTY = 8
+PASS_THRESHOLD_RELEVANCE = 8
+
+
+def _has_passing_candidate(scores: list[dict]) -> bool:
+    return any(
+        s.get("novelty", 0) >= PASS_THRESHOLD_NOVELTY and s.get("relevance", 0) >= PASS_THRESHOLD_RELEVANCE
+        for s in scores
+    )
 
 
 def _to_str(value) -> str:
@@ -263,6 +270,14 @@ def validate_critic(data: dict) -> list[str]:
     verdict = data.get("verdict", "").upper()
     if verdict not in ("PASS", "FAIL"):
         errors.append(f"critic verdict '{verdict}' not PASS/FAIL")
+    scores = data.get("scores", [])
+    if verdict == "PASS" and not _has_passing_candidate(scores):
+        errors.append("critic PASS without candidate meeting threshold")
+    if verdict == "FAIL":
+        if len(data.get("unexplored_directions", [])) < 2:
+            errors.append("critic FAIL should include at least 2 unexplored_directions")
+        if len(data.get("feedback_for_curiosity", [])) < 2:
+            errors.append("critic FAIL should include at least 2 feedback_for_curiosity notes")
     return errors
 
 

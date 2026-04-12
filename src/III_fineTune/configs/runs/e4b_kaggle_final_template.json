@@ -1,7 +1,7 @@
 {
-  "run_name": "creative_reasoning_sft",
+  "run_name": "kaggle_e4b_final",
   "created_at": "",
-  "notes": "Alias e2b here is for fast local smoke. For hackathon final training on Kaggle, use e4b (see configs/runs/e4b_kaggle_final_template.json or pick e4b in sft_train TUI).",
+  "notes": "E4B template for final Kaggle train. Fill data.* paths (or rebuild from TUI) then copy to Kaggle.",
   "data": {
     "combined_path": "",
     "train_path": "",
@@ -9,15 +9,15 @@
     "test_path": ""
   },
   "model": {
-    "alias": "e2b",
-    "hf_model_id": "google/gemma-4-E2B-it",
-    "unsloth_model_id": "unsloth/gemma-4-E2B-it",
+    "alias": "e4b",
+    "hf_model_id": "google/gemma-4-E4B-it",
+    "unsloth_model_id": "unsloth/gemma-4-E4B-it",
     "chat_template": "gemma-4",
     "thinking": false
   },
   "training": {
     "backend": "unsloth",
-    "output_dir": "data/output/models/creative_reasoning_sft",
+    "output_dir": "data/output/models/kaggle_e4b_final",
     "load_in_4bit": true,
     "full_finetuning": false,
     "max_seq_length": 4096,

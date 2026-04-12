@@ -1,0 +1,568 @@
+{
+  "domain": "Naming & Identity Design",
+  "input": "Name an AI-powered creative studio for musicians, but avoid futuristic cliches and obvious music words.",
+  "loop": [
+    {
+      "iteration": 1,
+      "curiosity": {
+        "hidden_assumptions": [
+          "Nomenclature must evoke creativity or artistry",
+          "Avoiding music words implies a purely abstract or technical naming scheme",
+          "The target audience values mystery over clarity in branding"
+        ],
+        "unexplored_domains": [
+          "Linguistics/Etymology of defunct or niche crafts",
+          "Mycology/Natural processes terminology",
+          "Architectural/Structural engineering jargon"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "What existing non-music domain's core process mirrors musical composition (e.g., tension/release, layering)?",
+            "why_this_unlocks": "Moves naming source away from art/sound metaphors"
+          },
+          {
+            "id": "Q2",
+            "question": "What are the phonetic associations of 'AI' or 'Intelligence' that sound organic or tangible?",
+            "why_this_unlocks": "Bypasses the 'digital' cliché while acknowledging the tech core"
+          },
+          {
+            "id": "Q3",
+            "question": "How can the name imply 'co-creation' rather than 'generation'?",
+            "why_this_unlocks": "Shifts perceived role from tool to partner"
+          },
+          {
+            "id": "Q4",
+            "question": "Which natural elements or forces (e.g., erosion, crystallization) have non-musical rhythmic structures?",
+            "why_this_unlocks": "Provides concrete, non-human inspiration for branding"
+          }
+        ],
+        "branch_seeds": [
+          "Terms related to optics or diffraction patterns",
+          "Geological process names (fault lines, strata)",
+          "Nautical/Cartography terms (bearing, azimuth)",
+          "Botany terms describing growth patterns (phyllotaxis)"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "Algorithmic composition suites (e.g., Amper Music)",
+          "AI music generators (e.g., Google Magenta)",
+          "Abstract creative brand naming conventions"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Optics/Diffraction",
+            "candidates": [
+              "Prismatica",
+              "Diffracta Studio",
+              "Interference Engine"
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Geological Strata",
+            "candidates": [
+              "Seamline Sound",
+              "Faultplane Works",
+              "Stratum Echo"
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Nautical/Cartography",
+            "candidates": [
+              "Bearing Point",
+              "Azimuth Canvas",
+              "Tropic Meridian"
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Botany/Growth",
+            "candidates": [
+              "Phyllotaxis Lab",
+              "Spiraloid Craft",
+              "Fibonacci Bloom"
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Process/Force Metaphor",
+            "candidates": [
+              "Erosion Draft",
+              "Crystallization Point",
+              "Tectonic Shift"
+            ]
+          }
+        ],
+        "pruned": [],
+        "combinations": [],
+        "dead_ends": [],
+        "output": []
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Prismatica",
+            "novelty": 4,
+            "relevance": 6,
+            "notes": "Visual science, moderate connection to sound"
+          },
+          {
+            "candidate": "Diffracta Studio",
+            "novelty": 5,
+            "relevance": 7,
+            "notes": "Slightly more technical, okay direction"
+          },
+          {
+            "candidate": "Interference Engine",
+            "novelty": 6,
+            "relevance": 7,
+            "notes": "Too mechanical, hints at process"
+          },
+          {
+            "candidate": "Seamline Sound",
+            "novelty": 6,
+            "relevance": 8,
+            "notes": "Good texture, 'Sound' is weak"
+          },
+          {
+            "candidate": "Faultplane Works",
+            "novelty": 7,
+            "relevance": 8,
+            "notes": "Strong structural metaphor, borderline"
+          },
+          {
+            "candidate": "Stratum Echo",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "A bit generic, echoes common sci-fi naming"
+          },
+          {
+            "candidate": "Bearing Point",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "Too navigational, lacks punch"
+          },
+          {
+            "candidate": "Azimuth Canvas",
+            "novelty": 4,
+            "relevance": 5,
+            "notes": "Mixing geography/art feels forced"
+          }
+        ],
+        "verdict": "FAIL",
+        "unexplored_directions": [
+          "Focus on sensory/perception mechanisms (e.g., 'Aperture', 'Resonance Array').",
+          "Combine two disparate, non-obvious scientific fields (e.g., 'Mycology + Optics').",
+          "Use Latin/Greek roots related to *structure* or *connection* rather than natural objects."
+        ],
+        "feedback_for_curiosity": [
+          "Strengthen the 'Action' verb/noun: The name needs to imply *doing* something to sound like a studio.",
+          "Avoid explicit nature references (Bloom, Leaf, Stone) unless heavily abstracted.",
+          "Test combinations of two single, powerful, non-musical nouns (e.g., 'Vector Loom')."
+        ]
+      }
+    },
+    {
+      "iteration": 2,
+      "curiosity": {
+        "hidden_assumptions": [
+          "Successful names imply structural manipulation.",
+          "Abstract scientific/structural terminology resonates better than descriptive adjectives."
+        ],
+        "unexplored_domains": [
+          "Myco-optics intersections",
+          "Classical Latin roots for connectivity",
+          "Physics concepts related to signal processing"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "Which Latin root for 'connection' best pairs with a concept of 'shaping'?",
+            "why_this_unlocks": "Directly addresses the need for structural Latin roots and action implication."
+          }
+        ],
+        "branch_seeds": [
+          "Torsion Grid",
+          "Nexus Engine",
+          "Optic Loom"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "AI music composition tools (e.g., Amper Music, AIVA)",
+          "Conceptual art studio names (e.g., Fluxus, Atelier)",
+          "Technical/mathematical terminology (e.g., Manifold, Tensor)"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Structural/Geometric Metaphor",
+            "candidates": [
+              "Octave Weave",
+              "Tessellation Core",
+              "Harmonic Lattice"
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Process/Mechanism Naming (Latin Root)",
+            "candidates": [
+              "Structura Nexus",
+              "Ligare Studio",
+              "Forma Machina"
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Optics/Light Interaction Metaphor",
+            "candidates": [
+              "Prism Echo",
+              "Diffraction Point",
+              "Spectra Loom"
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Physical Material/Tool Concept",
+            "candidates": [
+              "Alloy Board",
+              "Resonance Chisel",
+              "Kinetic Jig"
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Abstract Scientific Field Term",
+            "candidates": [
+              "Topology Craft",
+              "Phasing Domain",
+              "Manifold Array"
+            ]
+          }
+        ],
+        "pruned": [
+          {
+            "id": "B1",
+            "reason": "Too close to obvious musical structure"
+          }
+        ],
+        "combinations": [
+          {
+            "from": [
+              "B2",
+              "B5"
+            ],
+            "result": "Structura Manifold",
+            "novelty_note": "Combines Latin structure with high-level math concept"
+          },
+          {
+            "from": [
+              "B3",
+              "B4"
+            ],
+            "result": "Prism Chisel",
+            "novelty_note": "Tangible action applied to light phenomena"
+          },
+          {
+            "from": [
+              "B2",
+              "B3"
+            ],
+            "result": "Ligare Spectra",
+            "novelty_note": "Connection (Latin) applied to light spectrum"
+          }
+        ],
+        "dead_ends": [
+          "Echo Loom",
+          "Engine Grid",
+          "Sci-Fi jargon"
+        ],
+        "output": [
+          "Structura Manifold",
+          "Topology Craft",
+          "Diffraction Point"
+        ]
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Octave Weave",
+            "novelty": 3,
+            "relevance": 4,
+            "notes": "Too musical. Weak."
+          },
+          {
+            "candidate": "Tessellation Core",
+            "novelty": 5,
+            "relevance": 5,
+            "notes": "Generic pattern concept."
+          },
+          {
+            "candidate": "Harmonic Lattice",
+            "novelty": 3,
+            "relevance": 6,
+            "notes": "Too close to music theory."
+          },
+          {
+            "candidate": "Structura Nexus",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "Solid, but common Latin framing."
+          },
+          {
+            "candidate": "Ligare Studio",
+            "novelty": 4,
+            "relevance": 5,
+            "notes": "Vague process naming."
+          },
+          {
+            "candidate": "Forma Machina",
+            "novelty": 5,
+            "relevance": 5,
+            "notes": "Slightly mechanical, but okay."
+          },
+          {
+            "candidate": "Prism Echo",
+            "novelty": 6,
+            "relevance": 6,
+            "notes": "Good imagery, but 'Echo' is weak."
+          },
+          {
+            "candidate": "Diffraction Point",
+            "novelty": 7,
+            "relevance": 6,
+            "notes": "Specific, but sounds like a lab."
+          }
+        ],
+        "verdict": "FAIL",
+        "unexplored_directions": [
+          "Biomorphic/Organic processes (e.g., Mycelium, Bloom)",
+          "Ancient/Lost language constructs (beyond simple Latin)"
+        ],
+        "feedback_for_curiosity": [
+          "Elevate 'Structura Manifold' by replacing the last word with a less technical noun.",
+          "Test combining the 'light' aspect (Prism/Spectra) with a 'structural' element (Lattice/Array) without musical words."
+        ]
+      }
+    },
+    {
+      "iteration": 3,
+      "curiosity": {
+        "hidden_assumptions": [
+          "Aesthetic preference leans towards natural, non-digital terminology.",
+          "Conceptual resonance must imply complex organization rather than direct sound generation."
+        ],
+        "unexplored_domains": [
+          "Mycology/Fungal networks",
+          "Pre-linguistic human communication methods",
+          "Geological formation naming conventions"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "What names evoke slow, patterned growth, like crystalline structures forming over time?",
+            "why_this_unlocks": "Addresses 'Biomorphic/Organic' while maintaining 'structural' feel."
+          },
+          {
+            "id": "Q2",
+            "question": "Which archaic root words suggest complex weaving or interconnected pathways, unrelated to known tongues?",
+            "why_this_unlocks": "Tackles 'Ancient/Lost language constructs' beyond simple Latin."
+          },
+          {
+            "id": "Q3",
+            "question": "How can 'Prism' be paired with a stable, non-musical physical noun (e.g., bedrock, armature)?",
+            "why_this_unlocks": "Directly tests combining 'light' (Prism/Spectra) with 'structural' (Lattice/Array) without music terms."
+          },
+          {
+            "id": "Q4",
+            "question": "What single word combines 'structure' and 'bloom' using botanical or geological metaphors?",
+            "why_this_unlocks": "Synthesizes the 'Bloom' concept with 'Structural' grounding."
+          }
+        ],
+        "branch_seeds": [
+          "Mycelial Array",
+          "Spectra Keystone",
+          "Rhizome Vault",
+          "Lattice Bloom"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "Bio-mimicry naming conventions",
+          "Geological formation names",
+          "Archaic/Latin roots for connection/pattern"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Mycelial/Rhizome structure metaphor",
+            "candidates": [
+              "Hyphae Loom",
+              "Undergrowth Engine",
+              "Vein Cluster"
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Crystalline/Pattern formation",
+            "candidates": [
+              "Facet Engine",
+              "Geode Index",
+              "Suture Array"
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Prism + Stable Noun constraint",
+            "candidates": [
+              "Prism Bedrock",
+              "Facet Armature",
+              "Spectrum Keystone"
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Weaving/Pathway roots (non-musical)",
+            "candidates": [
+              "Interstice Grid",
+              "Tapestry Node",
+              "Nexus Weft"
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Structure + Bloom (Botanical/Geological)",
+            "candidates": [
+              "Calcite Bloom",
+              "Petal Strata",
+              "Reticulum Core"
+            ]
+          }
+        ],
+        "pruned": [
+          {
+            "id": "B3",
+            "reason": "Keystone/Prism too familiar/techy"
+          }
+        ],
+        "combinations": [
+          {
+            "from": [
+              "B1",
+              "B2"
+            ],
+            "result": "Vein Geode",
+            "novelty_note": "Combines biological pathway with mineral formation structure"
+          },
+          {
+            "from": [
+              "B4",
+              "B5"
+            ],
+            "result": "Reticulum Interstice",
+            "novelty_note": "Layered concept: patterned pathways forming a structural void"
+          },
+          {
+            "from": [
+              "B1",
+              "B5"
+            ],
+            "result": "Myco-Strata",
+            "novelty_note": "Direct blend of fungal growth and layered geology"
+          }
+        ],
+        "dead_ends": [
+          "Lattice Bloom (too direct)",
+          "Spectrum Keystone (too buzzwordy)",
+          "Undergrowth Engine (too clunky)"
+        ],
+        "output": [
+          "Myco-Strata",
+          "Vein Geode",
+          "Interstice Grid"
+        ]
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Hyphae Loom",
+            "novelty": 6,
+            "relevance": 6,
+            "notes": "Good metaphor, slightly evocative."
+          },
+          {
+            "candidate": "Undergrowth Engine",
+            "novelty": 4,
+            "relevance": 5,
+            "notes": "Too clunky, 'Engine' is weak."
+          },
+          {
+            "candidate": "Vein Cluster",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "Solid, but slightly generic biological term."
+          },
+          {
+            "candidate": "Facet Engine",
+            "novelty": 5,
+            "relevance": 5,
+            "notes": "A bit too mechanical sounding."
+          },
+          {
+            "candidate": "Geode Index",
+            "novelty": 6,
+            "relevance": 5,
+            "notes": "Mixes natural/data terms; weak synergy."
+          },
+          {
+            "candidate": "Suture Array",
+            "novelty": 7,
+            "relevance": 6,
+            "notes": "Strong technical feel, but 'Suture' leans medical."
+          },
+          {
+            "candidate": "Prism Bedrock",
+            "novelty": 5,
+            "relevance": 4,
+            "notes": "Doesn't flow well; sounds like materials science."
+          },
+          {
+            "candidate": "Facet Armature",
+            "novelty": 6,
+            "relevance": 5,
+            "notes": "Better than Bedrock, but 'Armature' is common."
+          }
+        ],
+        "verdict": "PASS",
+        "unexplored_directions": [
+          "Liquid/Fluid dynamics metaphors (e.g., 'Resonance Slurry', 'Aether Flow')",
+          "Deep Time/Pre-Cambrian nomenclature (e.g., 'Protero-Form', 'Archetype Matrix')"
+        ],
+        "feedback_for_curiosity": [
+          "Test combining 'Vein'/'Myco' concepts with 'Geode'/'Strata' for maximum resonance.",
+          "Focus on single, powerful nouns derived from obscure natural processes, avoiding compounds where possible."
+        ]
+      }
+    }
+  ],
+  "final_output": [
+    "Myco-Strata",
+    "Vein Geode",
+    "Interstice Grid"
+  ],
+  "_meta": {
+    "domain_key": "naming_branding",
+    "pipeline_mode": "simple",
+    "elapsed_sec": 570.3,
+    "timestamp": "2026-04-12T18:20:05.207886",
+    "validation_errors": [
+      "loop[0].creativity has no output",
+      "loop[2].critic PASS without candidate meeting threshold"
+    ],
+    "parallel_seq": 4
+  }
+}

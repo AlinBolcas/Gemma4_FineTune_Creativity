@@ -1,10 +1,10 @@
 {
-  "_note": "Seed prompts are ordered roughly from simpler / shorter tasks to more open-ended / harder tasks. The goal is broad reasoning-pattern generalization, not narrow domain memorization.",
+  "_note": "This seed curriculum is designed to train general creative cognition rather than domain memorization. It keeps a small simple core for fast tests and short traces, while most prompts push toward ambiguity, tension, structural branching, recombination, and non-obvious synthesis. The hackathon-style prompt belongs in held-out evaluation, not the training curriculum.",
   "_recommended_pilots": {
     "fast_small_run": [
       "everyday_creative",
       "naming_branding",
-      "teaching_explanation"
+      "strategic_reframing"
     ],
     "strong_generalization_core": [
       "naming_branding",
@@ -12,127 +12,127 @@
       "scientific_hypothesis",
       "strategic_reframing",
       "cross_domain_analogy",
-      "narrative_worldbuilding"
+      "systems_future_design"
     ],
     "full_mix": "all"
   },
   "domains": {
     "everyday_creative": {
-      "label": "Everyday Creative Tasks",
+      "label": "Everyday Creative Framing",
       "prompts": [
-        "Find a name for my sausage dog.",
-        "Come up with a birthday present idea for someone who says they do not want anything.",
-        "Design a dinner party theme for 8 people who have nothing in common.",
-        "Write a short wedding toast for a couple you barely know.",
-        "Invent a rainy-day game for two bored children with only paper and tape.",
-        "Design a morning routine for someone who hates mornings but wants to feel more creative."
+        "Find a name for my sausage dog that feels distinctive, a little unexpected, and still affectionate.",
+        "Come up with a birthday present for someone who says they want nothing, but make it meaningful rather than expensive.",
+        "Design a dinner party theme for 8 people who have nothing in common, and make the format itself create connection.",
+        "Invent a rainy-day game for two bored children using only paper and tape, but it should get better after the first round.",
+        "Create a morning ritual for someone who hates routines but wants to feel more imaginative before work.",
+        "Redesign a thank-you note for someone you barely know so it feels sincere without sounding generic."
       ]
     },
     "naming_branding": {
-      "label": "Naming & Branding",
+      "label": "Naming & Identity Design",
       "prompts": [
-        "Generate names for an AI-powered creative studio that helps musicians compose.",
-        "Create a brand name for a biotech startup focused on gut microbiome therapeutics.",
-        "Name a nonprofit that teaches critical thinking to teenagers through debate.",
-        "Design a tagline for an AI ethics consultancy that audits algorithms for bias.",
-        "Rebrand a 100-year-old public library system for the digital age.",
-        "Name a multilingual education platform serving refugee communities."
+        "Name an AI-powered creative studio for musicians, but avoid futuristic cliches and obvious music words.",
+        "Create a brand name for a biotech startup in gut microbiome therapeutics that sounds trustworthy, not sterile.",
+        "Name a nonprofit that teaches critical thinking to teenagers through debate without sounding academic or preachy.",
+        "Rebrand a 100-year-old public library for the digital age while preserving its civic dignity.",
+        "Name a multilingual education platform for refugee communities that feels locally human, not NGO generic.",
+        "Invent a name for a new discipline combining neuroscience, design, and indigenous knowledge systems, and make it feel like a real field."
       ]
     },
     "teaching_explanation": {
-      "label": "Teaching & Explanation Design",
+      "label": "Teaching & Cognitive Tool Design",
       "prompts": [
-        "Explain recursion to a 12-year-old who hates math.",
-        "Design a 10-minute lesson that helps students feel the difference between correlation and causation.",
-        "Teach photosynthesis using only kitchen objects as analogies.",
-        "Create a memorable way to explain inflation to adults with no economics background.",
-        "Design an exercise that helps students understand why scientific controls matter.",
-        "Explain reinforcement learning to a curious teenager without using technical jargon."
+        "Explain recursion to a 12-year-old who hates math, but make the explanation itself memorable enough to retell.",
+        "Design a 10-minute lesson that makes students feel the difference between correlation and causation rather than just hearing it.",
+        "Teach photosynthesis using only kitchen objects, but avoid the usual factory analogy.",
+        "Create a way to explain inflation to adults with no economics background without using money metaphors.",
+        "Design an exercise that helps students notice their own hidden assumptions while solving a problem.",
+        "Invent a visual notation for teaching feedback loops to teenagers so they can use it across subjects."
       ]
     },
     "product_service_ideation": {
-      "label": "Product & Service Ideation",
+      "label": "Multi-Constraint Product & Service Design",
       "prompts": [
-        "Design an offline literacy tool for rural classrooms with no reliable electricity.",
-        "Invent a tool that helps first-generation university students navigate academic bureaucracy.",
-        "Design a peer learning system that works in classrooms with 60+ students and one teacher.",
-        "Propose a novel approach to vaccine distribution tracking that works without smartphones.",
-        "Design a mental health support system for contexts where therapy is culturally stigmatized.",
-        "Create a service that helps elderly people preserve life stories without needing to type."
+        "Design an offline literacy tool for rural classrooms with unreliable electricity that still feels magical to use.",
+        "Invent a service that helps first-generation university students navigate bureaucracy without making them feel managed.",
+        "Design a peer-learning system for classrooms with 60+ students and one teacher, where the bottleneck becomes a feature.",
+        "Propose a novel approach to vaccine distribution tracking that works without smartphones, stable internet, or centralized trust.",
+        "Create a mental health support system for contexts where therapy is culturally stigmatized, but do not frame it as therapy.",
+        "Design a system that helps elderly people preserve life stories without typing, and makes the stories easier to revisit than to record."
       ]
     },
     "scientific_hypothesis": {
-      "label": "Scientific Hypothesis",
+      "label": "Scientific Hypothesis & Research Design",
       "prompts": [
-        "Generate hypotheses for why a promising Alzheimer's drug trial failed despite strong preclinical results.",
-        "Propose alternative mechanisms for the observed placebo effect in pain management.",
-        "Generate hypotheses for why identical twins sometimes develop different autoimmune diseases.",
-        "Propose novel explanations for the Fermi paradox that are not the usual top answers.",
-        "Generate hypotheses for why sleep deprivation impairs creativity more than analytical reasoning.",
-        "Suggest competing explanations for why some ecosystems recover quickly after fire while others collapse."
+        "Generate competing hypotheses for why a promising Alzheimer's drug trial failed despite strong preclinical results, and make each imply a different next experiment.",
+        "Propose alternative mechanisms for the placebo effect in pain management that would change how trials are designed.",
+        "Generate hypotheses for why identical twins sometimes develop different autoimmune diseases, and identify what data would discriminate among them.",
+        "Suggest non-obvious explanations for why sleep deprivation harms creativity more than analytical reasoning.",
+        "Propose rival explanations for why some ecosystems recover after fire while others tip into collapse.",
+        "Invent a hypothesis for a phenomenon that looks contradictory at first glance, then describe the hidden variable that could reconcile it."
       ]
     },
     "strategic_reframing": {
-      "label": "Strategic Problem Reframing",
+      "label": "Strategic Reframing & Problem Redefinition",
       "prompts": [
-        "Reframe 'how do we increase school attendance?' as a systems problem.",
-        "Reframe 'how do we reduce hospital readmissions?' by questioning what success should mean.",
-        "Find three alternative definitions of productivity that would change what a company optimizes for.",
-        "Reframe 'how do we fight misinformation?' by questioning the assumption that more information is the solution.",
-        "Reframe 'how do we make AI safer?' by exploring what safety means to different stakeholders.",
-        "Reframe 'how do we solve burnout?' by challenging the assumption that the individual is the main unit of change."
+        "Reframe 'how do we increase school attendance?' as a systems problem, but give three definitions of success that conflict with each other.",
+        "Reframe 'how do we reduce hospital readmissions?' by questioning what a good discharge outcome really is.",
+        "Find three alternative definitions of productivity that would completely change what a company optimizes for.",
+        "Reframe 'how do we fight misinformation?' without assuming that more facts are the solution.",
+        "Reframe 'how do we make AI safer?' from the viewpoint of three stakeholders whose values genuinely conflict.",
+        "Reframe 'how do we solve burnout?' without centering the individual as the main unit of change."
       ]
     },
     "cross_domain_analogy": {
-      "label": "Cross-Domain Analogy",
+      "label": "Deep Structural Analogy",
       "prompts": [
-        "Find a deep structural analogy between immune systems and market regulation.",
-        "Map jazz improvisation onto software architecture design patterns.",
-        "Draw a structural analogy between coral reef ecosystems and open-source communities.",
-        "Find parallels between how forests recover from fire and how teams recover from failure.",
-        "Map the structure of a symphony orchestra onto distributed computing systems.",
-        "Find an analogy between mycelial nutrient sharing and how knowledge spreads inside organizations."
+        "Find a deep structural analogy between immune systems and market regulation, and say where the analogy breaks.",
+        "Map jazz improvisation onto software architecture, but avoid surface-level 'flexibility' comparisons.",
+        "Draw a structural analogy between coral reefs and open-source communities, and identify one misleading overlap.",
+        "Find parallels between forest recovery after fire and how teams recover from failure, but focus on system dynamics rather than emotion words.",
+        "Map the structure of a legal appeals process onto machine learning model refinement.",
+        "Find an analogy between mycelial nutrient sharing and how tacit knowledge moves inside organizations, then show what the analogy cannot explain."
       ]
     },
     "narrative_worldbuilding": {
-      "label": "Narrative & Worldbuilding",
+      "label": "Narrative & Rule-Based Worldbuilding",
       "prompts": [
-        "Create a villain whose worldview is internally coherent and sympathetic.",
-        "Design a non-human character with genuinely alien cognition that is not just 'human but strange'.",
-        "Build a protagonist defined by a contradiction they never fully resolve.",
-        "Design a story world where one physical law works differently and explore the social consequences.",
-        "Create a mentor character whose advice is sincerely given but systematically wrong.",
+        "Create a villain whose worldview is internally coherent and compassionate, but still dangerous.",
+        "Design a non-human character with alien cognition that is not just human emotion in strange clothing.",
+        "Build a protagonist defined by a contradiction that makes them effective in one context and destructive in another.",
+        "Design a story world where one physical law works differently, then trace the second-order social consequences.",
+        "Create a mentor whose advice is sincerely wise inside one moral framework and systematically harmful inside another.",
         "Invent a city whose architecture reveals its political system better than any speech could."
       ]
     },
     "philosophical_reasoning": {
-      "label": "Philosophical Reasoning",
+      "label": "Philosophical Thought Experiments",
       "prompts": [
-        "Construct a thought experiment challenging the hard problem of consciousness.",
-        "Reframe the trolley problem using a non-Western ethical framework.",
+        "Construct a thought experiment that challenges the hard problem of consciousness without using the standard examples.",
+        "Reframe the trolley problem through a non-Western ethical framework, and show what the original setup hides.",
         "Design a thought experiment that reveals a hidden assumption in how we define intelligence.",
-        "Construct an argument that makes a widely held moral intuition seem clearly wrong.",
-        "Propose a new philosophical paradox about identity.",
-        "Challenge the assumption that authenticity is always a virtue."
+        "Construct an argument that makes a widely held moral intuition feel unstable rather than simply wrong.",
+        "Invent a new paradox about identity that could only arise in a networked, AI-mediated society.",
+        "Challenge the assumption that authenticity is always a virtue by creating a case where performance is ethically superior."
       ]
     },
     "systems_future_design": {
       "label": "Systems & Future Design",
       "prompts": [
-        "Design a society that has solved loneliness as a public health problem.",
-        "What does education look like when AI tutors are ubiquitous and free?",
-        "Design a healthcare system optimized for prevention rather than treatment.",
-        "What does democratic governance look like when real-time citizen input is technologically trivial?",
-        "Design a city where no commute exceeds 15 minutes and explain the second-order effects.",
-        "Imagine a future labor market where most coordination work is automated. What new social frictions appear?"
+        "Design a society that has solved loneliness as a public health problem, then show the new failure mode it created.",
+        "What does education look like when AI tutors are ubiquitous and free, but attention is the scarce resource?",
+        "Design a healthcare system optimized for prevention rather than treatment, and identify who would resist it most.",
+        "Imagine democratic governance when real-time citizen input is trivial, then describe the new bottleneck.",
+        "Design a city where no commute exceeds 15 minutes, and trace the unintended second-order effects.",
+        "Imagine a labor market where most coordination work is automated; what new social frictions appear?"
       ]
     }
   },
   "eval_held_out": [
-    "What project ideas would you generate for the Gemma 4 Good Hackathon that would genuinely impress judges looking for novelty, technical depth, and real-world impact?",
-    "Design a creative mentorship system for students in under-resourced schools that does not require internet access.",
-    "Generate names for a new field of study that combines neuroscience, design thinking, and indigenous knowledge systems.",
-    "Reframe climate adaptation for coastal cities in a way that changes what gets built first.",
+    "For the Gemma 4 Good Hackathon I need project ideas that feel 'wow' to judges: a sharp real-world problem, a simple story, and something Gemma 4 is genuinely good for, not just wrapping the model. Suggest several strong directions and explain why each could win.",
+    "Design a creative mentorship system for students in under-resourced schools that works offline and resists generic tutoring tropes.",
+    "Generate names for a new field of study that combines neuroscience, design thinking, and indigenous knowledge systems, but make each name imply a different worldview.",
+    "Reframe climate adaptation for coastal cities in a way that changes what gets built first and why.",
     "Invent an educational product that becomes more useful when bandwidth gets worse, not better."
   ]
 }

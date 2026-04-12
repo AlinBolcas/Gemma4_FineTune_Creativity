@@ -17,6 +17,9 @@ sys.path.insert(0, str(REPO_ROOT))
 CYAN = "\033[96m"; GREEN = "\033[92m"; YELLOW = "\033[93m"; MAGENTA = "\033[95m"
 RED = "\033[91m"; GREY = "\033[90m"; BOLD = "\033[1m"; RESET = "\033[0m"
 
+TIER1_SYSTEM_PROMPT = "You are a helpful assistant."
+TIER3_MINIMAL_SYSTEM_PROMPT = "You are a creative reasoning assistant."
+
 SCAFFOLDED_SYSTEM_PROMPT = (
     "You are a creative reasoning engine. When given a task, think through it "
     "using Curiosity -> Creativity -> Critic. Surface hidden assumptions, "
@@ -73,7 +76,23 @@ def _run_eval_mode(generate_fn, prompt: str, mode: str) -> tuple[str, dict | Non
     return generate_fn(SCAFFOLDED_SYSTEM_PROMPT, prompt), None
 
 
-def evaluate(generate_fn_vanilla, generate_fn_tuned=None, prompts=None, verbose=True, scaffold_mode: str = "prompt_simple") -> list[dict]:
+def _run_tuned_mode(generate_fn, prompt: str, tuned_mode: str, scaffold_mode: str) -> tuple[str, dict | None]:
+    tuned_mode = (tuned_mode or "direct_minimal").strip().lower()
+    if tuned_mode == "match_scaffold":
+        return _run_eval_mode(generate_fn, prompt, scaffold_mode)
+    if tuned_mode == "direct_plain":
+        return generate_fn(TIER1_SYSTEM_PROMPT, prompt), None
+    return generate_fn(TIER3_MINIMAL_SYSTEM_PROMPT, prompt), None
+
+
+def evaluate(
+    generate_fn_vanilla,
+    generate_fn_tuned=None,
+    prompts=None,
+    verbose=True,
+    scaffold_mode: str = "advanced_pipeline",
+    tuned_mode: str = "direct_minimal",
+) -> list[dict]:
     if prompts is None:
         prompts = load_eval_prompts()
 
@@ -90,7 +109,7 @@ def evaluate(generate_fn_vanilla, generate_fn_tuned=None, prompts=None, verbose=
         # Tier 1: vanilla
         if verbose:
             print(f"\n  {CYAN}Tier 1: Vanilla...{RESET}")
-        row["tier1_vanilla"] = generate_fn_vanilla("You are a helpful assistant.", prompt)
+        row["tier1_vanilla"] = generate_fn_vanilla(TIER1_SYSTEM_PROMPT, prompt)
         if verbose:
             _print_response("Tier 1", row["tier1_vanilla"], CYAN)
 
@@ -109,18 +128,11 @@ def evaluate(generate_fn_vanilla, generate_fn_tuned=None, prompts=None, verbose=
         if generate_fn_tuned:
             if verbose:
                 print(f"\n  {MAGENTA}Tier 3: Fine-tuned...{RESET}")
-            if scaffold_mode in ("simple_pipeline", "advanced_pipeline"):
-                tier3_text, tier3_trace = _run_eval_mode(generate_fn_tuned, prompt, scaffold_mode)
-                row["tier3_tuned"] = tier3_text
-                row["tier3_mode"] = scaffold_mode
-                if tier3_trace is not None:
-                    row["tier3_trace"] = tier3_trace
-            elif scaffold_mode == "prompt_advanced":
-                row["tier3_tuned"] = generate_fn_tuned(ADVANCED_SCAFFOLDED_SYSTEM_PROMPT, prompt)
-                row["tier3_mode"] = scaffold_mode
-            else:
-                row["tier3_tuned"] = generate_fn_tuned("You are a helpful assistant.", prompt)
-                row["tier3_mode"] = "direct"
+            tier3_text, tier3_trace = _run_tuned_mode(generate_fn_tuned, prompt, tuned_mode, scaffold_mode)
+            row["tier3_tuned"] = tier3_text
+            row["tier3_mode"] = tuned_mode
+            if tier3_trace is not None:
+                row["tier3_trace"] = tier3_trace
             if verbose:
                 _print_response("Tier 3", row["tier3_tuned"], MAGENTA)
         else:
@@ -154,6 +166,168 @@ def export_eval(results: list[dict], output_path: Path | None = None):
 # Interactive TUI
 # ---------------------------------------------------------------------------
 
+PRESETS = {
+    "final_recommended": {
+        "label": "Final recommended",
+        "description": "Best hackathon comparison. All held-out prompts, Tier 2 uses advanced pipeline, Tier 3 tuned stays direct with a tiny identity prompt.",
+        "model_alias": "e4b",
+        "prompt_mode": "all",
+        "scaffold_mode": "advanced_pipeline",
+        "tuned_mode": "direct_minimal",
+    },
+    "quick_smoke": {
+        "label": "Quick smoke test",
+        "description": "Fast check. One prompt, simple scaffold, tuned stays direct.",
+        "model_alias": "e2b",
+        "prompt_mode": "single",
+        "scaffold_mode": "prompt_simple",
+        "tuned_mode": "direct_minimal",
+    },
+    "custom": {
+        "label": "Custom",
+        "description": "Choose prompts, scaffold baseline, and tuned behavior manually.",
+        "model_alias": "e2b",
+        "prompt_mode": "custom",
+        "scaffold_mode": "prompt_simple",
+        "tuned_mode": "direct_minimal",
+    },
+}
+
+SCAFFOLD_LABELS = {
+    "prompt_simple": "Prompt scaffold, simple",
+    "prompt_advanced": "Prompt scaffold, advanced",
+    "simple_pipeline": "Pipeline runner, simple",
+    "advanced_pipeline": "Pipeline runner, advanced",
+}
+
+TUNED_LABELS = {
+    "direct_minimal": "Direct tuned reply with minimal identity prompt",
+    "direct_plain": "Direct tuned reply with plain helpful-assistant prompt",
+    "match_scaffold": "Apply the same scaffold to tuned too",
+}
+
+
+def _guess_model_alias_from_name(name: str) -> str | None:
+    lowered = (name or "").lower()
+    for alias in ("e4b", "e2b", "26b", "31b"):
+        if alias in lowered:
+            return alias
+    return None
+
+
+def _read_adapter_alias(adapter_path: Path) -> str | None:
+    run_dir = REPO_ROOT / "data" / "output" / "training_runs" / adapter_path.name
+    for snapshot_name in ("training_complete.json", "training_start.json"):
+        snapshot_path = run_dir / snapshot_name
+        if snapshot_path.exists():
+            try:
+                data = json.loads(snapshot_path.read_text(encoding="utf-8"))
+                alias = data.get("config", {}).get("model", {}).get("alias")
+                if alias:
+                    return str(alias)
+            except Exception:
+                pass
+    return _guess_model_alias_from_name(adapter_path.name)
+
+
+def _pick_preset() -> str:
+    print(f"\n{YELLOW}Evaluation preset:{RESET}")
+    keys = list(PRESETS.keys())
+    for i, key in enumerate(keys, 1):
+        preset = PRESETS[key]
+        default = f" {GREY}<- default{RESET}" if i == 1 else ""
+        print(f"  [{i}] {preset['label']}{default}")
+        print(f"      {GREY}{preset['description']}{RESET}")
+    raw = input("\n  Choice [1]: ").strip() or "1"
+    if raw.isdigit() and 1 <= int(raw) <= len(keys):
+        return keys[int(raw) - 1]
+    return keys[0]
+
+
+def _pick_model_alias(models: dict, default_alias: str) -> str:
+    print(f"\n{YELLOW}Base model for vanilla + tuned adapter:{RESET}")
+    aliases = list(models.keys())
+    default_index = aliases.index(default_alias) + 1 if default_alias in aliases else 1
+    for i, alias in enumerate(aliases, 1):
+        info = models[alias]
+        default = f" {GREY}<- default{RESET}" if i == default_index else ""
+        print(f"  [{i}] {alias:<5} {info['ram_gb']:>3}GB  {info['description']}{default}")
+    raw = input(f"\n  Choice [{default_index}]: ").strip() or str(default_index)
+    if raw.isdigit() and 1 <= int(raw) <= len(aliases):
+        return aliases[int(raw) - 1]
+    return aliases[default_index - 1]
+
+
+def _pick_adapter(adapter_dirs: list[Path], default_yes: bool) -> Path | None:
+    hint = "Y/n" if default_yes else "y/N"
+    print(f"\n{YELLOW}Include fine-tuned adapter in Tier 3? [{hint}]{RESET}")
+    raw = input("  > ").strip().lower()
+    if not raw:
+        include = default_yes
+    else:
+        include = raw in ("y", "yes")
+    if not include:
+        return None
+    if not adapter_dirs:
+        print(f"  {YELLOW}No adapter dirs found in data/output/models/{RESET}")
+        return None
+
+    print(f"\n{YELLOW}Available adapters:{RESET}")
+    for i, path in enumerate(adapter_dirs, 1):
+        alias = _read_adapter_alias(path)
+        suffix = f"  {GREY}(base {alias}){RESET}" if alias else ""
+        print(f"  [{i}] {path.name}{suffix}")
+    raw = input(f"\n  Choice [1]: ").strip() or "1"
+    idx = int(raw) - 1 if raw.isdigit() and 1 <= int(raw) <= len(adapter_dirs) else 0
+    return adapter_dirs[idx]
+
+
+def _pick_prompts(prompts: list[str], default_all: bool) -> list[str]:
+    print(f"\n{YELLOW}Eval prompts:{RESET}")
+    for i, prompt in enumerate(prompts, 1):
+        print(f"  [{i}] {prompt[:65]}...")
+    print(f"  [a] all ({len(prompts)})")
+    default_raw = "a" if default_all else "1"
+    raw = input(f"\n  Choice [{default_raw}]: ").strip().lower() or default_raw
+    if raw == "a":
+        return prompts
+    if raw.isdigit() and 1 <= int(raw) <= len(prompts):
+        return [prompts[int(raw) - 1]]
+    return prompts if default_all else [prompts[0]]
+
+
+def _pick_scaffold_mode(default_mode: str) -> str:
+    print(f"\n{YELLOW}Tier 2 scaffold baseline:{RESET}")
+    options = [
+        ("1", "prompt_simple", "Simple prompt asking for Curiosity -> Creativity -> Critic stages."),
+        ("2", "prompt_advanced", "Longer explicit staged prompt. Good when you want visible manual scaffolding."),
+        ("3", "simple_pipeline", "Structured pipeline runner. One loop. Cleaner than a long prompt."),
+        ("4", "advanced_pipeline", "Most complete scaffold baseline. Best final comparison default."),
+    ]
+    default_key = next((key for key, mode, _ in options if mode == default_mode), "4")
+    for key, mode, description in options:
+        default = f" {GREY}<- default{RESET}" if key == default_key else ""
+        print(f"  [{key}] {SCAFFOLD_LABELS[mode]}{default}")
+        print(f"      {GREY}{description}{RESET}")
+    raw = input(f"\n  Choice [{default_key}]: ").strip() or default_key
+    return {key: mode for key, mode, _ in options}.get(raw, default_mode)
+
+
+def _pick_tuned_mode(default_mode: str) -> str:
+    print(f"\n{YELLOW}Tier 3 tuned behavior:{RESET}")
+    options = [
+        ("1", "direct_minimal", "Recommended. Lets the tuned model answer directly with only a tiny identity prompt."),
+        ("2", "direct_plain", "Direct reply with the same plain helpful-assistant prompt as Tier 1."),
+        ("3", "match_scaffold", "Apply the same scaffold to tuned too. Useful as an extra ablation, not the main final comparison."),
+    ]
+    default_key = next((key for key, mode, _ in options if mode == default_mode), "1")
+    for key, mode, description in options:
+        default = f" {GREY}<- default{RESET}" if key == default_key else ""
+        print(f"  [{key}] {TUNED_LABELS[mode]}{default}")
+        print(f"      {GREY}{description}{RESET}")
+    raw = input(f"\n  Choice [{default_key}]: ").strip() or default_key
+    return {key: mode for key, mode, _ in options}.get(raw, default_mode)
+
 def _tui():
     from src.IV_inference.gemma4_integration import load_gemma4, load_finetuned_gemma4, MODELS
 
@@ -162,60 +336,40 @@ def _tui():
     print(f"  Vanilla vs Scaffolded vs Fine-tuned")
     print(f"{BOLD}{MAGENTA}{'='*60}{RESET}")
 
-    # Model
-    print(f"\n{YELLOW}Model:{RESET}")
-    aliases = list(MODELS.keys())
-    for i, alias in enumerate(aliases, 1):
-        info = MODELS[alias]
-        default = f" {GREY}<- default{RESET}" if i == 1 else ""
-        print(f"  [{i}] {alias:<5} {info['ram_gb']:>3}GB  {info['description']}{default}")
-    raw = input(f"\n  Choice [1]: ").strip() or "1"
-    model_alias = aliases[int(raw) - 1] if raw.isdigit() and 1 <= int(raw) <= len(aliases) else aliases[0]
+    prompts = load_eval_prompts()
+    preset_key = _pick_preset()
+    preset = PRESETS[preset_key]
+
+    models_dir = REPO_ROOT / "data" / "output" / "models"
+    adapter_dirs = [p for p in sorted(models_dir.glob("*")) if p.is_dir()]
+    adapter_path = _pick_adapter(adapter_dirs, default_yes=(preset_key == "final_recommended"))
+    inferred_alias = _read_adapter_alias(adapter_path) if adapter_path else None
+    model_alias = _pick_model_alias(MODELS, inferred_alias or preset["model_alias"])
+
+    if adapter_path and inferred_alias and inferred_alias != model_alias:
+        print(f"\n{YELLOW}Adapter looks like base `{inferred_alias}`. Switching base model to match it.{RESET}")
+        model_alias = inferred_alias
+
+    if preset["prompt_mode"] == "all":
+        selected = prompts
+    elif preset["prompt_mode"] == "single":
+        selected = [prompts[0]] if prompts else []
+    else:
+        selected = _pick_prompts(prompts, default_all=True)
+
+    if preset_key == "custom":
+        scaffold_mode = _pick_scaffold_mode(preset["scaffold_mode"])
+        tuned_mode = _pick_tuned_mode(preset["tuned_mode"])
+    else:
+        scaffold_mode = preset["scaffold_mode"]
+        tuned_mode = preset["tuned_mode"]
+        print(f"\n{GREEN}Using preset:{RESET} {preset['label']}")
+        print(f"  Tier 2: {SCAFFOLD_LABELS[scaffold_mode]}")
+        print(f"  Tier 3: {TUNED_LABELS[tuned_mode]}")
+        print(f"  Prompts: {'all held-out prompts' if preset['prompt_mode'] == 'all' else 'first held-out prompt'}")
 
     generate_fn = load_gemma4(model=model_alias)
-
-    tuned_fn = None
-    print(f"\n{YELLOW}Include fine-tuned adapter in Tier 3? [y/N]{RESET}")
-    if input("  > ").strip().lower() in ("y", "yes"):
-        models_dir = REPO_ROOT / "data" / "output" / "models"
-        adapter_dirs = [p for p in sorted(models_dir.glob("*")) if p.is_dir()]
-        if not adapter_dirs:
-            print(f"  {YELLOW}No adapter dirs found in data/output/models/{RESET}")
-        else:
-            print(f"\n{YELLOW}Available adapters:{RESET}")
-            for i, path in enumerate(adapter_dirs, 1):
-                print(f"  [{i}] {path.name}")
-            raw = input(f"\n  Choice [1]: ").strip() or "1"
-            idx = int(raw) - 1 if raw.isdigit() and 1 <= int(raw) <= len(adapter_dirs) else 0
-            adapter_path = adapter_dirs[idx]
-            tuned_fn = load_finetuned_gemma4(str(adapter_path), base_model=model_alias)
-
-    # Prompts
-    prompts = load_eval_prompts()
-    print(f"\n{YELLOW}Eval prompts:{RESET}")
-    for i, p in enumerate(prompts, 1):
-        print(f"  [{i}] {p[:65]}...")
-    print(f"  [a] all ({len(prompts)})")
-    raw = input(f"\n  Choice [a]: ").strip().lower() or "a"
-    if raw == "a":
-        selected = prompts
-    elif raw.isdigit() and 1 <= int(raw) <= len(prompts):
-        selected = [prompts[int(raw) - 1]]
-    else:
-        selected = prompts
-
-    print(f"\n{YELLOW}Tier 2/Tier 3 scaffold mode:{RESET}")
-    print("  [1] prompt scaffold (simple)")
-    print("  [2] prompt scaffold (advanced)")
-    print("  [3] simple pipeline runner")
-    print("  [4] advanced pipeline runner")
-    scaffold_raw = input("\n  Choice [1]: ").strip() or "1"
-    scaffold_mode = {
-        "1": "prompt_simple",
-        "2": "prompt_advanced",
-        "3": "simple_pipeline",
-        "4": "advanced_pipeline",
-    }.get(scaffold_raw, "prompt_simple")
+    tuned_fn = load_finetuned_gemma4(str(adapter_path), base_model=model_alias) if adapter_path else None
 
     # Run
     results = evaluate(
@@ -224,6 +378,7 @@ def _tui():
         prompts=selected,
         verbose=True,
         scaffold_mode=scaffold_mode,
+        tuned_mode=tuned_mode,
     )
     export_eval(results)
     print(f"\n  {GREEN}Evaluation complete: {len(results)} prompts.{RESET}")

@@ -1,0 +1,766 @@
+{
+  "domain": "Everyday Creative Framing",
+  "input": "Find a name for my sausage dog that feels distinctive, a little unexpected, and still affectionate.",
+  "loop": [
+    {
+      "iteration": 1,
+      "curiosity": {
+        "hidden_assumptions": [
+          "Name must relate to canine traits",
+          "Human linguistic convention dictates 'affectionate'",
+          "Distinctive implies novelty, not necessarily pronounceability"
+        ],
+        "unexplored_domains": [
+          "Mythology/Folklore (non-human)",
+          "Culinary/Spice nomenclature",
+          "Archaic/Obscure word roots"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "What emotional resonance does 'unexpected' carry for the owner?",
+            "why_this_unlocks": "Shifts focus from sound/look to feeling"
+          }
+        ],
+        "branch_seeds": [
+          "Names derived from scientific measurements",
+          "Mythological figures associated with slimness",
+          "Obscure constellation names"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "Classical dog names (Max, Lucy)",
+          "Scientific nomenclature (Newton, Curie)",
+          "Celestial names (Sirius, Orion)"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Scientific measurement unit",
+            "candidates": [
+              "Femto",
+              "Lux",
+              "Milli"
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Mythological tricksters/ethereal beings",
+            "candidates": [
+              "Puck",
+              "Echo",
+              "Sprite"
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Obscure constellation geometry",
+            "candidates": [
+              "Triangulum",
+              "Pavo",
+              "Draco"
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Canine action/trait descriptor",
+            "candidates": [
+              "Slink",
+              "Wiggle",
+              "Looper"
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Emotional resonance (Quirk/Joy)",
+            "candidates": [
+              "Glee",
+              "Noodle",
+              "Jubilee"
+            ]
+          }
+        ],
+        "pruned": [
+          {
+            "id": "B2",
+            "reason": "Too abstract/human-like"
+          }
+        ],
+        "combinations": [
+          {
+            "from": [
+              "B1",
+              "B4"
+            ],
+            "result": "Femto-Slink",
+            "novelty_note": "Precision + Movement"
+          },
+          {
+            "from": [
+              "B3",
+              "B5"
+            ],
+            "result": "Pavo-Glee",
+            "novelty_note": "Cosmic + Joy"
+          },
+          {
+            "from": [
+              "B1",
+              "B5"
+            ],
+            "result": "Lux-Jubilee",
+            "novelty_note": "Light + Celebration"
+          }
+        ],
+        "dead_ends": [
+          "Too academic",
+          "Too common",
+          "Unpronounceable"
+        ],
+        "output": [
+          "Lux-Jubilee",
+          "Femto",
+          "Puck-Slink"
+        ]
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Femto-Slink",
+            "novelty": 6,
+            "relevance": 6,
+            "notes": "Slightly forced combination. Too academic."
+          },
+          {
+            "candidate": "Pavo-Glee",
+            "novelty": 5,
+            "relevance": 4,
+            "notes": "Random pairing. Lacks natural flow."
+          },
+          {
+            "candidate": "Lux-Jubilee",
+            "novelty": 6,
+            "relevance": 6,
+            "notes": "Better flow, but still slightly abstract."
+          },
+          {
+            "candidate": "Femto",
+            "novelty": 3,
+            "relevance": 3,
+            "notes": "Too purely scientific. Lacks affection."
+          },
+          {
+            "candidate": "Puck-Slink",
+            "novelty": 7,
+            "relevance": 5,
+            "notes": "Stronger, but 'Puck' leans too much into known tropes."
+          },
+          {
+            "candidate": "Lux-Jubilee",
+            "novelty": 6,
+            "relevance": 6,
+            "notes": "Duplicate scoring."
+          },
+          {
+            "candidate": "Femto",
+            "novelty": 3,
+            "relevance": 3,
+            "notes": "Duplicate scoring."
+          },
+          {
+            "candidate": "Puck-Slink",
+            "novelty": 7,
+            "relevance": 5,
+            "notes": "Duplicate scoring."
+          }
+        ],
+        "verdict": "FAIL",
+        "unexplored_directions": [
+          "Hybridizing food/snack names with dog actions.",
+          "Using archaic/regional dialect terms for small things.",
+          "Combining two contrasting, unrelated positive concepts (e.g., velvet + lightning)."
+        ],
+        "feedback_for_curiosity": [
+          "The output relies too heavily on 'prefix-suffix' structure; try single, evocative nouns.",
+          "Boost relevance by anchoring the 'unexpected' feel to the 'affectionate' core, not just random coolness.",
+          "Discarding 'B2' (Mythology) was premature; focus on one specific, unexpected mythological creature instead of the category."
+        ]
+      }
+    },
+    {
+      "iteration": 2,
+      "curiosity": {
+        "hidden_assumptions": [
+          "Unexpectedness derives from juxtaposition, not just random pairing.",
+          "Affectionate core anchors the unusual element to a perceived positive quality.",
+          "Single, evocative nouns are preferred over constructed portmanteaus."
+        ],
+        "unexplored_domains": [
+          "Mythological creature names (specific focus)",
+          "Food/snack names integrated with canine behaviors",
+          "Archaic/regional dialect terms related to smallness or fondness"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "What single, evocative noun references a small, endearing natural phenomenon?",
+            "why_this_unlocks": "Bypasses structured naming; focuses on inherent, delicate 'affectionate' quality."
+          }
+        ],
+        "branch_seeds": [
+          "A specific, lesser-known mythological creature name",
+          "A single word merging snack texture/concept with dog sound/action",
+          "Archaic term for 'sweetness' or 'small treasure'"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "Classical dog names (Buddy, Scout)",
+          "Literary references to small, cute animals (Pip, Thumper)",
+          "Mythology names (Arlo, Loki)"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Mythological creature: small/endearing",
+            "candidates": [
+              "Sylph",
+              "Pixie",
+              "Sprite"
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Snack texture/sound merge: short, playful",
+            "candidates": [
+              "Crumb",
+              "Snap",
+              "Popkin"
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Archaic sweetness/treasure: gentle sound",
+            "candidates": [
+              "Nectar",
+              "Gemel",
+              "Mirth"
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Natural phenomenon noun: miniature scale",
+            "candidates": [
+              "Glimmer",
+              "Dewdrop",
+              "Flicker"
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Juxtaposition: Unusual structure/soft feel",
+            "candidates": [
+              "Bramble",
+              "Verdigris",
+              "Umbra"
+            ]
+          }
+        ],
+        "pruned": [
+          {
+            "id": "B2",
+            "reason": "Too mechanical/harsh sounding for affectionate pet name"
+          },
+          {
+            "id": "B3",
+            "reason": "Too abstract/academic; lacks immediate pet connection"
+          }
+        ],
+        "combinations": [
+          {
+            "from": [
+              "B1",
+              "B4"
+            ],
+            "result": "SpriteGlim",
+            "novelty_note": "Mythic lightness + natural fleeting light"
+          },
+          {
+            "from": [
+              "B4",
+              "B5"
+            ],
+            "result": "DewUmbra",
+            "novelty_note": "Soft, shadowed natural object"
+          },
+          {
+            "from": [
+              "B1",
+              "B3"
+            ],
+            "result": "PixieNectar",
+            "novelty_note": "Mythic character + potent sweetness"
+          }
+        ],
+        "dead_ends": [
+          "Portmanteau names",
+          "Overly complex mythology",
+          "Generic natural elements"
+        ],
+        "output": [
+          "Sylph",
+          "Glimmer",
+          "PixieNectar"
+        ]
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Sylph",
+            "novelty": 6,
+            "relevance": 7,
+            "notes": "Mildly unexpected, affectionate potential. Standard 'cute' vibe."
+          },
+          {
+            "candidate": "Pixie",
+            "novelty": 4,
+            "relevance": 8,
+            "notes": "Commonly used, slightly cliché but safe."
+          },
+          {
+            "candidate": "Sprite",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "Similar to Pixie, slightly more ethereal."
+          },
+          {
+            "candidate": "Crumb",
+            "novelty": 3,
+            "relevance": 7,
+            "notes": "Rejected for being too harsh/mechanical."
+          },
+          {
+            "candidate": "Popkin",
+            "novelty": 4,
+            "relevance": 5,
+            "notes": "Unclear association, slightly awkward sound."
+          },
+          {
+            "candidate": "Nectar",
+            "novelty": 3,
+            "relevance": 4,
+            "notes": "Too abstract, lacks pet connection."
+          },
+          {
+            "candidate": "Gemel",
+            "novelty": 5,
+            "relevance": 4,
+            "notes": "Too obscure, requires explanation."
+          },
+          {
+            "candidate": "Mirth",
+            "novelty": 3,
+            "relevance": 3,
+            "notes": "Too abstract, purely conceptual."
+          }
+        ],
+        "verdict": "FAIL",
+        "unexplored_directions": [
+          "Single word, unexpected food/spice names (e.g., Paprika, Fennel)",
+          "Onomatopoeia related to sausage movement (e.g., Whizz, Slink)",
+          "Juxtaposing hard nouns with soft adjectives (e.g., Slate Puff)"
+        ],
+        "feedback_for_curiosity": [
+          "Focus on names that sound good when called (syllable rhythm).",
+          "Test candidates against 'whisper' and 'shout' calls.",
+          "Need more immediate, visceral 'cute' resonance, less poetic."
+        ]
+      }
+    },
+    {
+      "iteration": 3,
+      "curiosity": {
+        "hidden_assumptions": [
+          "Affectionate resonance prioritized over direct breed association",
+          "Single-word, evocative, slightly bizarre naming convention viable",
+          "Rhythm and call quality essential criteria"
+        ],
+        "unexplored_domains": [
+          "Culinary spice/herb nomenclature",
+          "Movement sound effects (onomatopoeia)",
+          "Adjective-Noun juxtapositions"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "Which spice/herb name has the best 1-2 syllable call rhythm (e.g., 'Papri', 'Fenn')?",
+            "why_this_unlocks": "Tests the single-word, unexpected food domain with a focus on callability."
+          },
+          {
+            "id": "Q2",
+            "question": "What onomatopoeia best mimics a low, cute 'whuff' or 'slink' sound?",
+            "why_this_unlocks": "Directly addresses the movement onomatopoeia and visceral cute resonance."
+          },
+          {
+            "id": "Q3",
+            "question": "Provide 3 examples of (Hard Noun + Soft Adjective) that sound inherently cuddly.",
+            "why_this_unlocks": "Tests the juxtaposing structure while enforcing the 'cute' resonance requirement."
+          },
+          {
+            "id": "Q4",
+            "question": "How does the rhythmic stress change when calling 'Whizz' vs 'Slink' vs 'Paprika'?",
+            "why_this_unlocks": "Systematically compares the call quality across different phonetic types."
+          }
+        ],
+        "branch_seeds": [
+          "High-energy spice calls",
+          "Low-frequency movement sounds",
+          "Concrete object + soft texture pairings"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "Spice names (e.g., Saffron, Anise)",
+          "Movement sounds (e.g., Thump, Whisper)",
+          "Object/Texture pairings (e.g., Pebble velvet)"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Spice-derived rhythm",
+            "candidates": [
+              "Cardamom",
+              "Za'atar",
+              "Sumac"
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Onomatopoeic movement",
+            "candidates": [
+              "Woomph",
+              "Squee",
+              "Pooty"
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Hard/Soft Noun pairing",
+            "candidates": [
+              "Stone plush",
+              "Iron silk",
+              "Copper fleece"
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Mythological/Flora echo",
+            "candidates": [
+              "Bramble",
+              "Nettle",
+              "Truffle"
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Color/Material juxtaposition",
+            "candidates": [
+              "Ashwhisper",
+              "Cobalt dust",
+              "Rye velvet"
+            ]
+          }
+        ],
+        "pruned": [
+          {
+            "id": "B1",
+            "reason": "Too many syllables/too earthy"
+          }
+        ],
+        "combinations": [
+          {
+            "from": [
+              "B2",
+              "B3"
+            ],
+            "result": "Squee-stone",
+            "novelty_note": "Action + Texture combo"
+          },
+          {
+            "from": [
+              "B4",
+              "B5"
+            ],
+            "result": "Truffle ash",
+            "novelty_note": "Ethereal nature meets muted color"
+          }
+        ],
+        "dead_ends": [
+          "too literal",
+          "too harsh",
+          "common animal names"
+        ],
+        "output": [
+          "Za'atar",
+          "Woomph",
+          "Stone plush",
+          "Rye velvet"
+        ]
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Za'atar",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "Spice name, slightly unexpected, passable."
+          },
+          {
+            "candidate": "Woomph",
+            "novelty": 4,
+            "relevance": 7,
+            "notes": "Onomatopoeia, fun, but generic sound."
+          },
+          {
+            "candidate": "Stone plush",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "Texture combo, evocative but slightly clunky."
+          },
+          {
+            "candidate": "Rye velvet",
+            "novelty": 6,
+            "relevance": 6,
+            "notes": "Juxtaposition, pretty, but niche pairing."
+          }
+        ],
+        "verdict": "FAIL",
+        "unexplored_directions": [
+          "Bi-colon/Prefix-Suffix structure (e.g., 'Flibbert', 'Zizzle')",
+          "Nostalgic, forgotten brand names (e.g., 'Spangle', 'Grumble')",
+          "Cross-cultural food/drink references (beyond simple spice names)"
+        ],
+        "feedback_for_curiosity": [
+          "Focus on combining two unrelated, strong sensory words.",
+          "Test names that sound like single words but mean something obscure.",
+          "Discard overly descriptive pairings; aim for single, punchy nouns/adjectives."
+        ]
+      }
+    },
+    {
+      "iteration": 4,
+      "curiosity": {
+        "hidden_assumptions": [
+          "The owner values sonic novelty over direct meaning.",
+          "Unexpectedness must retain an inherent playful warmth."
+        ],
+        "unexplored_domains": [
+          "Obscure scientific nomenclature",
+          "Vintage industrial product names",
+          "Archaic slang terms"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "Which niche historical trade/guild name best evokes 'sleekness'?",
+            "why_this_unlocks": "Tapping into forgotten, authoritative sound structures."
+          },
+          {
+            "id": "Q2",
+            "question": "What two unrelated, highly resonant consonants create a pleasing, single-word rhythm?",
+            "why_this_unlocks": "Focusing purely on phonetic architecture, per critique."
+          },
+          {
+            "id": "Q3",
+            "question": "Are there brand names from pre-1950s household goods with strong alliteration?",
+            "why_this_unlocks": "Testing the 'forgotten brand' concept aggressively."
+          },
+          {
+            "id": "Q4",
+            "question": "What are the most evocative single-word descriptors for 'shiny' or 'smooth' in non-English languages?",
+            "why_this_unlocks": "Exploring cross-cultural sensory links beyond common food items."
+          }
+        ],
+        "branch_seeds": [
+          "Prefix/Suffix mashups (e.g., 'Glo' + 'Zar')",
+          "Single-word nouns derived from obsolete machinery",
+          "Phonetic combinations of 'liquid' + 'velvet'"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "Literary characters with dog-like names",
+          "Classic German/Nordic naming tropes",
+          "Names derived from natural materials (wood, stone)"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Obsolete machinery/guild names for sleekness",
+            "candidates": [
+              "Tallow-Press",
+              "Whetstone",
+              "Crankshaft"
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Phonetic liquid/velvet mashups",
+            "candidates": [
+              "Livella",
+              "Velvix",
+              "Liquorius"
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Resonant consonant pairs",
+            "candidates": [
+              "L-R-V",
+              "S-K-Z",
+              "V-L-N"
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Pre-1950s household goods alliteration",
+            "candidates": [
+              "Spruce-Scrub",
+              "Bright-Broom",
+              "Drip-Dispenser"
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Non-English 'shiny/smooth' descriptors",
+            "candidates": [
+              "Lumino (Latin root)",
+              "Shine (Finnish root)",
+              "Lustra (Italian root)"
+            ]
+          }
+        ],
+        "pruned": [
+          {
+            "id": "B4",
+            "reason": "Too utilitarian/domestic sounding"
+          }
+        ],
+        "combinations": [
+          {
+            "from": [
+              "B1",
+              "B2"
+            ],
+            "result": "Whetlivella",
+            "novelty_note": "Machinery grit meets liquid smoothness"
+          },
+          {
+            "from": [
+              "B3",
+              "B5"
+            ],
+            "result": "Lustra-L-R-V",
+            "novelty_note": "Foreign gloss enhanced by resonant consonants"
+          },
+          {
+            "from": [
+              "B1",
+              "B3"
+            ],
+            "result": "Crank-SKZ",
+            "novelty_note": "Harsh mechanical start paired with rhythmic consonants"
+          }
+        ],
+        "dead_ends": [
+          "Too overtly technical",
+          "Too abstract",
+          "Too German"
+        ],
+        "output": [
+          "Velvix",
+          "Lumino",
+          "Livella"
+        ]
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Tallow-Press",
+            "novelty": 3,
+            "relevance": 2,
+            "notes": "Too literal/harsh for dog name"
+          },
+          {
+            "candidate": "Whetstone",
+            "novelty": 4,
+            "relevance": 3,
+            "notes": "Okay, but sounds like a tool"
+          },
+          {
+            "candidate": "Crankshaft",
+            "novelty": 3,
+            "relevance": 1,
+            "notes": "Zero affection, too mechanical"
+          },
+          {
+            "candidate": "Livella",
+            "novelty": 6,
+            "relevance": 5,
+            "notes": "Slightly evocative, but vague"
+          },
+          {
+            "candidate": "Velvix",
+            "novelty": 6,
+            "relevance": 5,
+            "notes": "A bit forced, but smooth sound"
+          },
+          {
+            "candidate": "Liquorius",
+            "novelty": 4,
+            "relevance": 3,
+            "notes": "Too academic/Latinate"
+          },
+          {
+            "candidate": "L-R-V",
+            "novelty": 2,
+            "relevance": 1,
+            "notes": "Not a name, just letters"
+          },
+          {
+            "candidate": "S-K-Z",
+            "novelty": 1,
+            "relevance": 1,
+            "notes": "Random consonant cluster"
+          }
+        ],
+        "verdict": "FAIL",
+        "unexplored_directions": [
+          "Mythological/mythic creature parts (e.g., river names, elemental concepts)",
+          "Understated, specific nouns that sound like names (e.g., mineral names, rare spice)",
+          "Anthropomorphic food items with sophisticated sounding names (e.g., Figg, Gastron)"
+        ],
+        "feedback_for_curiosity": [
+          "Focus on sound profile: Combine the 'soft' feeling of B2 with the mild exoticism of B5.",
+          "Discard combinations; they are too arbitrary.",
+          "The 'affectionate' requirement demands a human-sounding ending, not a technical one.",
+          "Revisit German/Nordic: Aim for diminutives or surnames rather than tropes."
+        ]
+      }
+    }
+  ],
+  "final_output": [
+    "Velvix",
+    "Lumino",
+    "Livella"
+  ],
+  "_meta": {
+    "domain_key": "everyday_creative",
+    "pipeline_mode": "simple",
+    "elapsed_sec": 886.6,
+    "timestamp": "2026-04-12T18:25:21.468449",
+    "validation_errors": [],
+    "parallel_seq": 1
+  }
+}

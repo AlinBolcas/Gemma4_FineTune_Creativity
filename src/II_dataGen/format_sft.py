@@ -43,7 +43,19 @@ def _is_advanced_example(example: dict) -> bool:
     return any("advanced" in iteration for iteration in example.get("loop", []))
 
 
-def _format_simple_iteration(iteration: dict) -> list[str]:
+def _dedupe_keep_order(items: list[str]) -> list[str]:
+    seen = set()
+    result = []
+    for item in items:
+        value = str(item).strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        result.append(value)
+    return result
+
+
+def _format_simple_iteration(iteration: dict, include_critic: bool = False) -> list[str]:
     parts = []
 
     cur = iteration.get("curiosity", {})
@@ -86,228 +98,200 @@ def _format_simple_iteration(iteration: dict) -> list[str]:
         for item in cre["output"]:
             parts.append(f"- {item}")
 
-    cri = iteration.get("critic", {})
-    parts.append("### Critic")
-    verdict = cri.get("verdict", "?")
-    parts.append(f"Verdict: {verdict}")
-    if cri.get("scores"):
-        for item in cri["scores"]:
-            parts.append(
-                f"- {item.get('candidate', '?')}: novelty={item.get('novelty', '?')}, "
-                f"relevance={item.get('relevance', '?')} | {item.get('notes', '')}"
-            )
-    if verdict == "FAIL" and cri.get("feedback_for_curiosity"):
-        parts.append("Feedback for next pass:")
-        for item in cri["feedback_for_curiosity"]:
-            parts.append(f"- {item}")
+    if include_critic:
+        cri = iteration.get("critic", {})
+        parts.append("### Critic")
+        verdict = cri.get("verdict", "?")
+        parts.append(f"Verdict: {verdict}")
+        if cri.get("scores"):
+            for item in cri["scores"]:
+                parts.append(
+                    f"- {item.get('candidate', '?')}: novelty={item.get('novelty', '?')}, "
+                    f"relevance={item.get('relevance', '?')} | {item.get('notes', '')}"
+                )
+        if verdict == "FAIL" and cri.get("feedback_for_curiosity"):
+            parts.append("Feedback for next pass:")
+            for item in cri["feedback_for_curiosity"]:
+                parts.append(f"- {item}")
 
     return parts
 
 
-def _format_advanced_iteration(iteration: dict) -> list[str]:
+def _format_advanced_iteration(iteration: dict, include_critic: bool = False) -> list[str]:
     parts = []
     advanced = iteration.get("advanced", {})
 
     cmap = advanced.get("curiosity_map", {})
-    parts.append("### Curiosity Map")
-    if cmap.get("global_novelty_estimate") is not None:
-        parts.append(f"Novelty estimate: {cmap.get('global_novelty_estimate', '?')}/10")
-    if cmap.get("branch_budget"):
-        parts.append(f"Branch budget: {cmap.get('branch_budget')}")
-    if cmap.get("known_context"):
-        parts.append("Known context:")
-        for item in cmap["known_context"]:
-            parts.append(f"- {item}")
+    cexpand = advanced.get("curiosity_expand", {})
+    cdistill = advanced.get("curiosity_distill", {})
+    socratic = advanced.get("socratic_output", {})
+
+    research = advanced.get("creativity_research_plan", {})
+    cbranch = advanced.get("creativity_branch", {})
+    selection = advanced.get("creativity_selection", {})
+    mixing = advanced.get("creativity_mixing", {})
+    synthesis = advanced.get("creativity_final_synthesis", {})
+    # Canonical training shape for both simple and advanced traces.
+    parts.append("### Curiosity")
     if cmap.get("hidden_assumptions"):
         parts.append("Hidden assumptions:")
         for item in cmap["hidden_assumptions"]:
             parts.append(f"- {item}")
-    if cmap.get("curiosity_domains"):
-        parts.append("Curiosity domains:")
-        for item in cmap["curiosity_domains"]:
-            parts.append(
-                f"- {item.get('id', '?')}: [{item.get('lens', '')}] {item.get('domain', '')} | "
-                f"{item.get('novelty_opportunity', '')}"
-            )
-    if cmap.get("seed_questions"):
-        parts.append("Seed questions:")
-        for item in cmap["seed_questions"]:
-            parts.append(f"- {item.get('id', '?')}: {item.get('question', '')}")
 
-    cexpand = advanced.get("curiosity_expand", {})
-    parts.append("### Curiosity Expand")
-    for item in cexpand.get("expanded_branches", []):
-        parts.append(
-            f"- {item.get('id', '?')}: {item.get('direction', '')} | "
-            f"strength={item.get('curiosity_strength', '?')}/10 | keep={item.get('keep', True)}"
-        )
-        for question in item.get("questions", []):
-            parts.append(f"  - {question}")
-    if cexpand.get("pruned_branches"):
-        parts.append("Pruned curiosity branches:")
-        for item in cexpand["pruned_branches"]:
-            parts.append(f"- {item.get('id', '?')}: {item.get('reason', '')}")
-
-    cdistill = advanced.get("curiosity_distill", {})
-    parts.append("### Curiosity Distill")
+    questions = []
     for item in cdistill.get("best_questions", []):
-        parts.append(
-            f"- {item.get('id', '?')}: {item.get('question', '')} | "
-            f"leverage={item.get('leverage_score', '?')}/10 | {item.get('why_high_leverage', '')}"
-        )
-    if cdistill.get("socratic_scaffold"):
-        parts.append("Socratic scaffold:")
-        for item in cdistill["socratic_scaffold"]:
-            parts.append(f"- {item}")
-    if cdistill.get("exploration_direction"):
-        parts.append(f"Exploration direction: {cdistill.get('exploration_direction')}")
-    if cdistill.get("steering_signals"):
-        parts.append("Steering signals:")
-        for item in cdistill["steering_signals"]:
+        if isinstance(item, dict) and item.get("question"):
+            questions.append(item.get("question"))
+    for item in cmap.get("seed_questions", []):
+        if isinstance(item, dict) and item.get("question"):
+            questions.append(item.get("question"))
+    for item in socratic.get("question_set", []):
+        questions.append(item)
+    questions = _dedupe_keep_order(questions)[:6]
+    if questions:
+        parts.append("Key questions:")
+        for item in questions:
             parts.append(f"- {item}")
 
-    socratic = advanced.get("socratic_output", {})
-    parts.append("### Socratic Output")
-    if socratic.get("question_set"):
-        parts.append("Question set:")
-        for item in socratic["question_set"]:
-            parts.append(f"- {item}")
-    if socratic.get("scaffold"):
-        parts.append("Scaffold:")
-        for item in socratic["scaffold"]:
-            parts.append(f"- {item}")
-    if socratic.get("direction"):
-        parts.append(f"Direction: {socratic.get('direction')}")
-    if socratic.get("constraints"):
-        parts.append("Constraints:")
-        for item in socratic["constraints"]:
-            parts.append(f"- {item}")
-    if socratic.get("novelty_focus"):
-        parts.append("Novelty focus:")
-        for item in socratic["novelty_focus"]:
+    branch_seeds = []
+    for item in cexpand.get("expanded_branches", []):
+        direction = item.get("direction", "")
+        if direction:
+            branch_seeds.append(direction)
+        for question in item.get("questions", []):
+            branch_seeds.append(question)
+    branch_seeds.extend(cdistill.get("steering_signals", []))
+    branch_seeds.extend(socratic.get("novelty_focus", []))
+    branch_seeds = _dedupe_keep_order(branch_seeds)[:8]
+    if branch_seeds:
+        parts.append(f"Branch seeds: {', '.join(branch_seeds)}")
+
+    parts.append("### Creativity")
+    research_items = []
+    research_items.extend(research.get("known_patterns", []))
+    research_items.extend(research.get("adjacent_domains", []))
+    research_items.extend(research.get("creative_tensions", []))
+    research_items.extend(research.get("research_queries", []))
+    research_items = _dedupe_keep_order(research_items)[:6]
+    if research_items:
+        parts.append("Research:")
+        for item in research_items:
             parts.append(f"- {item}")
 
-    research = advanced.get("creativity_research_plan", {})
-    parts.append("### Creativity Research Plan")
-    if research.get("complexity") is not None:
-        parts.append(f"Complexity: {research.get('complexity', '?')}/10")
-    if research.get("branch_budget"):
-        parts.append(f"Branch budget: {research.get('branch_budget')}")
-    if research.get("known_patterns"):
-        parts.append("Known patterns:")
-        for item in research["known_patterns"]:
-            parts.append(f"- {item}")
-    if research.get("adjacent_domains"):
-        parts.append("Adjacent domains:")
-        for item in research["adjacent_domains"]:
-            parts.append(f"- {item}")
-    if research.get("creative_tensions"):
-        parts.append("Creative tensions:")
-        for item in research["creative_tensions"]:
-            parts.append(f"- {item}")
-    if research.get("research_queries"):
-        parts.append("Research queries:")
-        for item in research["research_queries"]:
-            parts.append(f"- {item}")
-
-    cbranch = advanced.get("creativity_branch", {})
-    parts.append("### Creativity Branch")
+    branch_lines = []
     for item in cbranch.get("branches", []):
-        examples = ", ".join(item.get("examples", [])[:3])
-        parts.append(
-            f"- {item.get('id', '?')}: {item.get('frame', '')} | domain={item.get('domain', '')} | "
-            f"constraint={item.get('constraint', '')} | examples=[{examples}]"
-        )
-        if item.get("why_distinct"):
-            parts.append(f"  - why distinct: {item.get('why_distinct')}")
+        bid = item.get("id", "?")
+        frame = item.get("frame", "")
+        examples = item.get("examples", [])[:3]
+        candidates = ", ".join(examples)
+        branch_lines.append(f"- {bid}: {frame} [{candidates}]")
+    if not branch_lines:
+        for item in advanced.get("creativity_develop", []):
+            outputs = ", ".join(item.get("branch_outputs", [])[:3])
+            branch_lines.append(f"- {item.get('branch_id', '?')}: Developed branch [{outputs}]")
+    if branch_lines:
+        parts.append("Branches:")
+        parts.extend(branch_lines[:8])
 
-    parts.append("### Develop Branches")
-    for item in advanced.get("creativity_develop", []):
-        parts.append(f"- {item.get('branch_id', '?')}")
-        if item.get("chain_steps"):
-            parts.append("  - chain steps:")
-            for step in item["chain_steps"]:
-                parts.append(f"    - {step}")
-        if item.get("branch_outputs"):
-            parts.append("  - branch outputs:")
-            for output in item["branch_outputs"]:
-                parts.append(f"    - {output}")
-        if item.get("novelty_delta"):
-            parts.append(f"  - novelty delta: {item.get('novelty_delta')}")
-        if item.get("exhausted_when"):
-            parts.append(f"  - exhausted when: {item.get('exhausted_when')}")
-
-    selection = advanced.get("creativity_selection", {})
-    parts.append("### Selection")
+    pruned_lines = []
     for item in selection.get("scored_branches", []):
-        parts.append(
-            f"- {item.get('branch_id', '?')}: n={item.get('novelty', '?')}/10 "
-            f"r={item.get('relevance', '?')}/10 c={item.get('combinability', '?')}/10 "
-            f"| {item.get('decision', '?')} | {item.get('reason', '')}"
-        )
-    if selection.get("kept_branch_ids"):
-        parts.append(f"Kept branches: {', '.join(selection['kept_branch_ids'])}")
+        decision = str(item.get("decision", "")).lower()
+        if decision and decision not in ("keep", "kept", "selected"):
+            pruned_lines.append(f"- {item.get('branch_id', '?')}: {item.get('reason', '')}")
+    if pruned_lines:
+        parts.append("Pruned:")
+        parts.extend(_dedupe_keep_order(pruned_lines)[:6])
 
-    mixing = advanced.get("creativity_mixing", {})
-    parts.append("### Combinatory Mixing")
+    combination_lines = []
     for item in mixing.get("hybrids", []):
-        parts.append(
-            f"- {item.get('id', '?')}: {item.get('from_branch_ids', [])} -> {item.get('concept', '')} "
-            f"| strength={item.get('strength_score', '?')}/10 | {item.get('why_novel', '')}"
+        combination_lines.append(
+            f"- {item.get('from_branch_ids', [])} -> {item.get('concept', '')} ({item.get('why_novel', '')})"
         )
-    if mixing.get("dead_ends"):
-        parts.append("Dead ends:")
-        for item in mixing["dead_ends"]:
-            parts.append(f"- {item.get('from_branch_ids', [])}: {item.get('reason', '')}")
-
-    synthesis = advanced.get("creativity_final_synthesis", {})
-    parts.append("### Final Synthesis")
-    for item in synthesis.get("primary_candidates", []):
-        parts.append(
-            f"- {item.get('id', '?')}: {item.get('title', '')} | {item.get('concept', '')} | "
-            f"from={item.get('built_from', [])}"
-        )
-        if item.get("novelty_notes"):
-            parts.append(f"  - novelty: {item.get('novelty_notes')}")
     if synthesis.get("best_combination"):
-        parts.append(f"Best combination: {synthesis.get('best_combination')}")
-    if synthesis.get("output"):
-        parts.append("Final candidates:")
-        for item in synthesis["output"]:
+        combination_lines.append(f"- best -> {synthesis.get('best_combination')} ()")
+    if combination_lines:
+        parts.append("Combinations:")
+        parts.extend(_dedupe_keep_order(combination_lines)[:6])
+
+    candidate_items = []
+    for item in synthesis.get("output", []):
+        candidate_items.append(item)
+    for item in synthesis.get("primary_candidates", []):
+        title = item.get("title", "")
+        concept = item.get("concept", "")
+        candidate_items.append(title or concept)
+    candidate_items = _dedupe_keep_order(candidate_items)[:6]
+    if candidate_items:
+        parts.append("Candidates:")
+        for item in candidate_items:
             parts.append(f"- {item}")
 
-    critic = iteration.get("critic", {})
-    parts.append("### Critic")
-    verdict = critic.get("verdict", "?")
-    parts.append(f"Verdict: {verdict}")
-    for item in critic.get("scores", []):
-        candidate_label = item.get("candidate_id", item.get("candidate", "?"))
-        parts.append(
-            f"- {candidate_label}: novelty={item.get('novelty', '?')}, "
-            f"relevance={item.get('relevance', '?')} | {item.get('notes', '')}"
-        )
-    if verdict == "FAIL":
-        if critic.get("feedback_for_curiosity"):
-            parts.append("Feedback for curiosity:")
-            for item in critic["feedback_for_curiosity"]:
-                parts.append(f"- {item}")
-        if critic.get("feedback_for_creativity"):
-            parts.append("Feedback for creativity:")
-            for item in critic["feedback_for_creativity"]:
-                parts.append(f"- {item}")
+    if include_critic:
+        critic = iteration.get("critic", {})
+        parts.append("### Critic")
+        verdict = critic.get("verdict", "?")
+        parts.append(f"Verdict: {verdict}")
+        for item in critic.get("scores", []):
+            candidate_label = item.get("candidate_id", item.get("candidate", "?"))
+            parts.append(
+                f"- {candidate_label}: novelty={item.get('novelty', '?')}, "
+                f"relevance={item.get('relevance', '?')} | {item.get('notes', '')}"
+            )
+        if verdict == "FAIL":
+            if critic.get("feedback_for_curiosity"):
+                parts.append("Feedback for curiosity:")
+                for item in critic["feedback_for_curiosity"]:
+                    parts.append(f"- {item}")
+            if critic.get("feedback_for_creativity"):
+                parts.append("Feedback for creativity:")
+                for item in critic["feedback_for_creativity"]:
+                    parts.append(f"- {item}")
 
     return parts
 
 
-def format_trace_as_text(example: dict) -> str:
+def _passed_iterations(example: dict) -> list[dict]:
+    passed = []
+    for iteration in example.get("loop", []):
+        verdict = str(iteration.get("critic", {}).get("verdict", "")).upper().strip()
+        if verdict == "PASS":
+            passed.append(iteration)
+    return passed
+
+
+def _select_training_iterations(example: dict, pass_only: bool = True, last_pass_only: bool = True) -> list[dict]:
+    loop = example.get("loop", []) or []
+    if not loop:
+        return []
+
+    passed = _passed_iterations(example)
+    if pass_only:
+        if not passed:
+            return []
+        return [passed[-1]] if last_pass_only else passed
+
+    return [loop[-1]] if last_pass_only else loop
+
+
+def format_trace_as_text(
+    example: dict,
+    include_critic: bool = False,
+    pass_only: bool = True,
+    last_pass_only: bool = True,
+) -> str:
     """Convert a full-loop example into the assistant's visible reasoning output."""
     parts = []
     advanced = _is_advanced_example(example)
+    iterations = _select_training_iterations(example, pass_only=pass_only, last_pass_only=last_pass_only)
 
-    for iteration in example.get("loop", []):
+    for iteration in iterations:
         it_num = iteration.get("iteration", "?")
         parts.append(f"## Iteration {it_num}")
-        parts.extend(_format_advanced_iteration(iteration) if advanced else _format_simple_iteration(iteration))
+        parts.extend(
+            _format_advanced_iteration(iteration, include_critic=include_critic)
+            if advanced
+            else _format_simple_iteration(iteration, include_critic=include_critic)
+        )
         parts.append("")
 
     # Final output
@@ -317,13 +301,26 @@ def format_trace_as_text(example: dict) -> str:
         for f in final:
             parts.append(f"- {f}")
 
-    return "\n".join(parts)
+    return "\n".join(parts).strip()
 
 
-def convert_to_chat_format(example: dict, system_mode: str = "minimal") -> dict:
+def convert_to_chat_format(
+    example: dict,
+    system_mode: str = "minimal",
+    include_critic: bool = False,
+    pass_only: bool = True,
+    last_pass_only: bool = True,
+) -> dict | None:
     """Convert a full-loop example to a chat-format training row."""
     task = example.get("input", "")
-    trace_text = format_trace_as_text(example)
+    trace_text = format_trace_as_text(
+        example,
+        include_critic=include_critic,
+        pass_only=pass_only,
+        last_pass_only=last_pass_only,
+    )
+    if not task or not trace_text:
+        return None
 
     messages = []
     system_prompt = SYSTEM_PROMPT_MODES.get(system_mode, SYSTEM_PROMPT_MODES["minimal"])
@@ -410,10 +407,26 @@ def process_jsonl(
     output_path: Path | None = None,
     split: bool = True,
     system_mode: str = "minimal",
+    include_critic: bool = False,
+    pass_only: bool = True,
+    last_pass_only: bool = True,
 ):
     """Read raw pipeline JSONL, convert to SFT chat format, optionally create splits."""
     raw_examples = _read_jsonl(input_path)
-    examples = [convert_to_chat_format(raw, system_mode=system_mode) for raw in raw_examples]
+    examples = []
+    skipped = 0
+    for raw in raw_examples:
+        row = convert_to_chat_format(
+            raw,
+            system_mode=system_mode,
+            include_critic=include_critic,
+            pass_only=pass_only,
+            last_pass_only=last_pass_only,
+        )
+        if row is None:
+            skipped += 1
+            continue
+        examples.append(row)
 
     _ensure_dirs()
     if output_path is None:
@@ -424,7 +437,10 @@ def process_jsonl(
         f"  {GREEN}Converted {len(examples)} examples -> "
         f"{output_path.relative_to(REPO_ROOT)}{RESET}"
     )
+    if skipped:
+        print(f"  {YELLOW}Skipped:{RESET} {skipped} example(s) without a PASS iteration")
     print(f"  {GREEN}System prompt mode:{RESET} {system_mode}")
+    print(f"  {GREEN}Training trace mode:{RESET} last PASS only, critic removed")
 
     if split:
         train, eval_set, test = _split_examples(examples)
@@ -522,11 +538,27 @@ def _tui():
         return
 
     combined_path = INPUT_DIR / f"{_combined_stem(files)}_sft.jsonl"
-    examples = [convert_to_chat_format(raw, system_mode=system_mode) for raw in raw_examples]
+    examples = []
+    skipped = 0
+    for raw in raw_examples:
+        row = convert_to_chat_format(
+            raw,
+            system_mode=system_mode,
+            include_critic=False,
+            pass_only=True,
+            last_pass_only=True,
+        )
+        if row is None:
+            skipped += 1
+            continue
+        examples.append(row)
     _ensure_dirs()
     _write_jsonl(examples, combined_path)
     print(f"  {GREEN}Combined:{RESET} {combined_path.relative_to(REPO_ROOT)} ({len(examples)})")
+    if skipped:
+        print(f"  {YELLOW}Skipped:{RESET} {skipped} example(s) without a PASS iteration")
     print(f"  {GREEN}System prompt mode:{RESET} {system_mode}")
+    print(f"  {GREEN}Training trace mode:{RESET} last PASS only, critic removed")
 
     if do_split:
         train, eval_set, test = _split_examples(examples)

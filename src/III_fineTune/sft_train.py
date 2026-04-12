@@ -209,6 +209,7 @@ def build_run_config(bundle: dict, model_alias: str = "e2b", backend: str = "uns
         "runtime": {
             "target": "cloud",
             "preflight_sample_count": 3,
+            "post_train_eval": False,
         },
     }
 
@@ -257,6 +258,7 @@ def _build_config_tui() -> Path:
     from src.IV_inference.gemma4_integration import MODELS
 
     bundle = _select_bundle()
+    print(f"\n{GREY}Hackathon final: pick e4b. Local smoke: e2b is lighter.{RESET}")
     alias = _pick("Model alias:", list(MODELS.keys()), default=1)
     backend = _pick("Training backend:", ["unsloth", "transformers"], default=1)
     run_name = _ask("Run name", f"{bundle['base']}_{alias}_{backend}")
@@ -488,12 +490,14 @@ def _train_unsloth(config: dict):
     print(f"{GREEN}Saved model:{RESET} {output_dir}")
 
     eval_metrics = {}
-    if eval_dataset is not None:
+    if eval_dataset is not None and config["runtime"].get("post_train_eval", False):
         try:
             eval_metrics = trainer.evaluate()
         except Exception as e:
             eval_metrics = {"eval_skipped": True, "error": str(e)}
             print(f"{YELLOW}Post-train eval skipped:{RESET} {e}")
+    elif eval_dataset is not None:
+        eval_metrics = {"eval_skipped": True, "reason": "post_train_eval disabled in config"}
 
     _safe_json_dump(run_dir / "train_metrics.json", train_metrics)
     _safe_json_dump(run_dir / "eval_metrics.json", eval_metrics)
@@ -603,12 +607,14 @@ def _train_transformers(config: dict):
     print(f"{GREEN}Saved model:{RESET} {output_dir}")
 
     eval_metrics = {}
-    if eval_dataset is not None:
+    if eval_dataset is not None and config["runtime"].get("post_train_eval", False):
         try:
             eval_metrics = trainer.evaluate()
         except Exception as e:
             eval_metrics = {"eval_skipped": True, "error": str(e)}
             print(f"{YELLOW}Post-train eval skipped:{RESET} {e}")
+    elif eval_dataset is not None:
+        eval_metrics = {"eval_skipped": True, "reason": "post_train_eval disabled in config"}
 
     _safe_json_dump(run_dir / "train_metrics.json", train_metrics)
     _safe_json_dump(run_dir / "eval_metrics.json", eval_metrics)

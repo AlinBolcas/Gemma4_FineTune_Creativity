@@ -50,7 +50,7 @@ STAGE_COLORS = {
     "critic":    MAGENTA,
 }
 
-MAX_LOOP_ITERATIONS = 3
+MAX_LOOP_ITERATIONS = 4
 MAX_RETRIES_PER_CALL = 2
 
 
@@ -349,9 +349,9 @@ def _tui():
         if task.lower() in ("q", "quit", "exit", ""):
             break
 
-        print(f"\n{YELLOW}Max iterations [2]:{RESET}")
-        mi = input("  > ").strip() or "2"
-        max_iters = int(mi) if mi.isdigit() else 2
+        print(f"\n{YELLOW}Max iterations [4]:{RESET}")
+        mi = input("  > ").strip() or "4"
+        max_iters = int(mi) if mi.isdigit() else 4
 
         print(f"\n{YELLOW}Domain label [general]:{RESET}")
         domain = input("  > ").strip() or "general"

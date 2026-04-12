@@ -29,6 +29,13 @@ STEERING:
 - Avoid collapsing early into one obvious answer.
 """
 
+QUALITY_RULE = """
+QUALITY:
+- Prefer sharp, specific, concrete ideas over broad categories.
+- Avoid vague platforms, generic copilots, obvious wrappers, and buzzword stacks.
+- Reward mechanism-level novelty, not just surface reframing.
+"""
+
 
 def _json(data: dict | list) -> str:
     return json.dumps(data, indent=2, ensure_ascii=False)
@@ -220,6 +227,7 @@ RULES:
 - Identify what is obvious so you do not just repeat it.
 - Creative tensions should create structurally different branches.
 {STEERING_RULE}
+{QUALITY_RULE}
 {CONCISE_RULE}"""
 
 
@@ -249,6 +257,7 @@ RULES:
 - Avoid near-duplicates.
 - Keep branches generative enough to be developed independently.
 {STEERING_RULE}
+{QUALITY_RULE}
 {CONCISE_RULE}"""
 
 
@@ -272,6 +281,7 @@ RULES:
 - 2-4 branch_outputs.
 - Push for concrete, surprising, still relevant outputs.
 {STEERING_RULE}
+{QUALITY_RULE}
 {CONCISE_RULE}"""
 
 
@@ -300,6 +310,7 @@ RULES:
 - Keep 2-3 strongest branches when possible.
 - Prune branches that converge to the same shape.
 {STEERING_RULE}
+{QUALITY_RULE}
 {CONCISE_RULE}"""
 
 
@@ -328,6 +339,7 @@ RULES:
 - Dead ends are useful; log them briefly.
 - Prefer hybrids that could not arise from one branch alone.
 {STEERING_RULE}
+{QUALITY_RULE}
 {CONCISE_RULE}"""
 
 
@@ -355,6 +367,7 @@ RULES:
 - output should contain the best final ideas only.
 - Final candidates should reflect the strongest synthesis, not raw branches.
 {STEERING_RULE}
+{QUALITY_RULE}
 {CONCISE_RULE}"""
 
 
@@ -380,8 +393,13 @@ Return JSON:
 
 RULES:
 - Score every primary candidate.
-- PASS only if best candidate is both novel and relevant.
-- On FAIL, give concrete repair directions for both curiosity and creativity.
+- Most ideas should score 3-5 on novelty.
+- Score 8+ novelty only for rare, sharp, non-obvious ideas with clear mechanism and specificity.
+- Penalize vague, abstract, buzzword-heavy, obvious, or lightly remixed ideas.
+- Penalize candidates that sound smart but could fit many unrelated tasks with minimal change.
+- Borderline 7/10 novelty should usually FAIL unless the idea is clearly specific and structurally surprising.
+- PASS only if at least one candidate is both >= 8 novelty and >= 8 relevance.
+- On FAIL, give at least 2 unexplored_directions, 2 feedback_for_curiosity, and 2 feedback_for_creativity.
 {CONCISE_RULE}"""
 
 

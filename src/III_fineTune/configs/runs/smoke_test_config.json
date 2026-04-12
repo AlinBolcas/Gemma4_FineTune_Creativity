@@ -36,6 +36,7 @@
   },
   "runtime": {
     "target": "cloud",
-    "preflight_sample_count": 3
+    "preflight_sample_count": 3,
+    "post_train_eval": false
   }
 }

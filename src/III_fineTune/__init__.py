@@ -5,3 +5,4 @@ from .sft_train import (
     run_preflight,
     train_from_config,
 )
+from .report import discover_report_targets, generate_report

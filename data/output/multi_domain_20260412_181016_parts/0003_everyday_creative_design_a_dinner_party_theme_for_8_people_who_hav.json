@@ -1,0 +1,209 @@
+{
+  "domain": "Everyday Creative Framing",
+  "input": "Design a dinner party theme for 8 people who have nothing in common, and make the format itself create connection.",
+  "loop": [
+    {
+      "iteration": 1,
+      "curiosity": {
+        "hidden_assumptions": [
+          "Connection must be emotionally deep",
+          "Shared activity equals connection",
+          "Dinner conversation must be the primary driver"
+        ],
+        "unexplored_domains": [
+          "Sensory deprivation/amplification",
+          "Asynchronous interaction design",
+          "Gamification of mundane tasks"
+        ],
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "What mandatory, low-stakes failure mechanism can force unexpected collaboration?",
+            "why_this_unlocks": "Shifts focus from agreement to shared problem-solving"
+          },
+          {
+            "id": "Q2",
+            "question": "How can the menu structure require contrasting personal histories to execute?",
+            "why_this_unlocks": "Embeds personal vulnerability within logistical necessity"
+          },
+          {
+            "id": "Q3",
+            "question": "What non-verbal communication rule must be established for the evening?",
+            "why_this_unlocks": "Unlocks attention beyond dialogue; forces observation"
+          },
+          {
+            "id": "Q4",
+            "question": "Can the theme be based on a shared, mutual 'misunderstanding'?",
+            "why_this_unlocks": "Provides built-in common ground for initial bonding"
+          }
+        ],
+        "branch_seeds": [
+          "A 'Forensic Interview' dinner structure",
+          "Theme based on decoding a fictional artifact",
+          "Menu built around 'Opposite Textures' (e.g., smooth/gritty, sweet/sour)",
+          "Role-playing assigned to seating arrangements"
+        ]
+      },
+      "creativity": {
+        "research": [
+          "Structured conversation prompts",
+          "Activity-based icebreakers",
+          "Blind taste tests with narrative context"
+        ],
+        "branches": [
+          {
+            "id": "B1",
+            "frame": "Shared 'Misunderstanding' Artifact Decoding",
+            "candidates": [
+              "Mystery Box: Deconstructing a deliberately misleading, multi-part fictional artifact (e.g., a coded map fragment mixed with a recipe card) that requires synthesizing disparate knowledge areas to 'solve' the narrative."
+            ]
+          },
+          {
+            "id": "B2",
+            "frame": "Menu-Driven Narrative Constraint",
+            "candidates": [
+              "Ingredient pairing mandates emotional adjacency: Each course requires guests to link a specific flavor profile (e.g., bitterness) to a defining life memory or opinion, discussed before tasting."
+            ]
+          },
+          {
+            "id": "B3",
+            "frame": "Forced Collaborative Failure Mechanism",
+            "candidates": [
+              "The 'Improvised Dinner Party': One crucial element (e.g., a necessary serving utensil, a key piece of background music, or a required conversational topic) is revealed to be broken/missing at random intervals, requiring immediate, low-stakes group problem-solving."
+            ]
+          },
+          {
+            "id": "B4",
+            "frame": "Asymmetrical Role-Play Seating",
+            "candidates": [
+              "Seating determined by a 'Conflicting Perspective' prompt: Guests are assigned roles (e.g., 'The Skeptic,' 'The Enthusiast,' 'The Outsider') based on a single shared, unknown event, forcing immediate, constrained dialogue patterns."
+            ]
+          },
+          {
+            "id": "B5",
+            "frame": "Non-Verbal Communication Game",
+            "candidates": [
+              "Silent 'Narrative Relay': Throughout the meal, guests must communicate escalating emotional states or plot points only through agreed-upon, non-verbal signals (e.g., specific hand gestures, levels of eye contact) while maintaining conversation."
+            ]
+          }
+        ],
+        "pruned": [
+          {
+            "id": "B4",
+            "reason": "Too dependent on initial role assignment; lacks structural evolution."
+          }
+        ],
+        "combinations": [
+          {
+            "from": [
+              "B1",
+              "B2"
+            ],
+            "result": "Artifact tastes: Decoding a physical mystery using flavor profiles as mnemonic anchors.",
+            "novelty_note": "Links intellectual puzzle solving directly to sensory memory recall."
+          },
+          {
+            "from": [
+              "B3",
+              "B5"
+            ],
+            "result": "Broken signal: Physical failure forces guests to communicate complex states non-verbally, escalating tension.",
+            "novelty_note": "Combines external structural failure with enforced non-verbal constraint."
+          },
+          {
+            "from": [
+              "B1",
+              "B3"
+            ],
+            "result": "The 'Missing Piece' Challenge: The artifact puzzle cannot be solved because a required element is sabotaged/removed, demanding immediate group improvisation.",
+            "novelty_note": "Uses the puzzle failure as the core mechanism for forced collaboration."
+          }
+        ],
+        "dead_ends": [
+          "Simply assigning roles",
+          "General mystery box",
+          "Focusing only on the menu"
+        ],
+        "output": [
+          "Artifact tastes: Decoding a physical mystery using flavor profiles as mnemonic anchors.",
+          "The 'Missing Piece' Challenge: Artifact failure demands immediate group improvisation.",
+          "Broken signal: Physical failure forces non-verbal communication to resolve tension."
+        ]
+      },
+      "critic": {
+        "scores": [
+          {
+            "candidate": "Mystery Box: Deconstructing a deliberately misleading, multi-part fictional artifact (e.g., a coded map fragment mixed with a recipe card) that requires synthesizing disparate knowledge areas to 'solve' the narrative.",
+            "novelty": 7,
+            "relevance": 7,
+            "notes": "High potential, but 'mystery box' is common. Needs sharper linkage to 'connection'."
+          },
+          {
+            "candidate": "Ingredient pairing mandates emotional adjacency: Each course requires guests to link a specific flavor profile (e.g., bitterness) to a defining life memory or opinion, discussed before tasting.",
+            "novelty": 8,
+            "relevance": 9,
+            "notes": "Strong structure. Sensory + emotional memory link is highly specific and connective."
+          },
+          {
+            "candidate": "The 'Improvised Dinner Party': One crucial element (e.g., a necessary serving utensil, a key piece of background music, or a required conversational topic) is revealed to be broken/missing at random intervals, requiring immediate, low-stakes group problem-solving.",
+            "novelty": 6,
+            "relevance": 7,
+            "notes": "Good dynamic tension, but 'random failure' can feel arbitrary/stressful, not connective."
+          },
+          {
+            "candidate": "Seating determined by a 'Conflicting Perspective' prompt: Guests are assigned roles (e.g., 'The Skeptic,' 'The Enthusiast,' 'The Outsider') based on a single shared, unknown event, forcing immediate, constrained dialogue patterns.",
+            "novelty": 5,
+            "relevance": 6,
+            "notes": "Standard role-play trope. Weak mechanism for ensuring *genuine* connection among strangers."
+          },
+          {
+            "candidate": "Silent 'Narrative Relay': Throughout the meal, guests must communicate escalating emotional states or plot points only through agreed-upon, non-verbal signals (e.g., specific hand gestures, levels of eye contact) while maintaining conversation.",
+            "novelty": 8,
+            "relevance": 8,
+            "notes": "Very high structural novelty. Forces deep, shared focus beyond mere talk."
+          },
+          {
+            "candidate": "Artifact tastes: Decoding a physical mystery using flavor profiles as mnemonic anchors.",
+            "novelty": 8,
+            "relevance": 8,
+            "notes": "Excellent synthesis. Specific, multi-sensory, requires cross-domain knowledge."
+          },
+          {
+            "candidate": "Broken signal: Physical failure forces guests to communicate complex states non-verbally, escalating tension.",
+            "novelty": 7,
+            "relevance": 7,
+            "notes": "Overlap with B3/B5. 'Physical failure' is a weak lever unless precisely defined."
+          },
+          {
+            "candidate": "The 'Missing Piece' Challenge: Artifact failure demands immediate group improvisation.",
+            "novelty": 8,
+            "relevance": 9,
+            "notes": "Strongest synthesis. Failure *is* the connective tissue. High specificity."
+          }
+        ],
+        "verdict": "PASS",
+        "unexplored_directions": [
+          "Time constraint mechanisms (e.g., must solve X before dessert)",
+          "Cross-sensory memory prompts (smell/sound tied to conversation)"
+        ],
+        "feedback_for_curiosity": [
+          "Refine the 'Missing Piece' Challenge: Define the *type* of failure to guide interaction (e.g., ethical, logistical).",
+          "Elevate 'Emotional Adjacency': Specify the emotional spectrum (e.g., nostalgia vs. anxiety) for maximum prompt contrast."
+        ]
+      }
+    }
+  ],
+  "final_output": [
+    "Artifact tastes: Decoding a physical mystery using flavor profiles as mnemonic anchors.",
+    "The 'Missing Piece' Challenge: Artifact failure demands immediate group improvisation.",
+    "Broken signal: Physical failure forces non-verbal communication to resolve tension."
+  ],
+  "_meta": {
+    "domain_key": "everyday_creative",
+    "pipeline_mode": "simple",
+    "elapsed_sec": 104.8,
+    "timestamp": "2026-04-12T18:12:19.711560",
+    "validation_errors": [],
+    "parallel_seq": 3
+  }
+}

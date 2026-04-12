@@ -105,9 +105,11 @@ def load_finetuned_gemma4(
     from peft import PeftModel
 
     processor = AutoProcessor.from_pretrained(model_id, token=hf_token)
+    # IMPORTANT:
+    # For evaluation on small models like E2B / E4B, load the whole base model
+    # onto one device, then attach the adapter. PEFT + accelerate can fail when
+    # the base is partially offloaded / sharded during adapter loading.
     load_kwargs = {"dtype": dtype, "token": hf_token}
-    if dev == "cuda":
-        load_kwargs["device_map"] = "auto"
 
     if is_multimodal:
         from transformers import AutoModelForMultimodalLM
@@ -116,10 +118,16 @@ def load_finetuned_gemma4(
         from transformers import AutoModelForCausalLM
         base = AutoModelForCausalLM.from_pretrained(model_id, **load_kwargs)
 
-    if dev == "mps":
+    if dev == "cuda":
+        base = base.to("cuda")
+    elif dev == "mps":
         base = base.to("mps")
 
-    model = PeftModel.from_pretrained(base, adapter_path)
+    model = PeftModel.from_pretrained(
+        base,
+        adapter_path,
+        low_cpu_mem_usage=False,
+    )
     model.eval()
 
     def generate_fn(system_prompt: str, user_prompt: str) -> str:
@@ -169,7 +177,12 @@ def _detect_device() -> str:
 
 
 def _detect_dtype(device: str):
-    if device == "cuda": return torch.bfloat16
+    if device == "cuda":
+        # T4 / older GPUs usually do not support BF16 well. Prefer FP16 unless BF16 is explicitly supported.
+        try:
+            return torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+        except Exception:
+            return torch.float16
     if device == "mps":  return torch.float16
     return torch.float32
 

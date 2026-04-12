@@ -73,7 +73,7 @@ GREY = "\033[90m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
-MAX_LOOP_ITERATIONS = 2
+MAX_LOOP_ITERATIONS = 4
 MAX_RETRIES_PER_CALL = 2
 
 
@@ -549,9 +549,9 @@ def _tui():
         if task.lower() in ("q", "quit", "exit", ""):
             break
 
-        print(f"\n{YELLOW}Max iterations [1]:{RESET}")
-        raw_iters = input("  > ").strip() or "1"
-        max_iters = int(raw_iters) if raw_iters.isdigit() else 1
+        print(f"\n{YELLOW}Max iterations [4]:{RESET}")
+        raw_iters = input("  > ").strip() or "4"
+        max_iters = int(raw_iters) if raw_iters.isdigit() else 4
 
         print(f"\n{YELLOW}Domain label [general]:{RESET}")
         domain = input("  > ").strip() or "general"

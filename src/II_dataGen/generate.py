@@ -6,8 +6,12 @@ Run interactively:
 """
 
 import json
+import os
+import re
 import sys
 import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
 
@@ -74,6 +78,16 @@ def _append_example(path: Path, example: dict):
         f.write(json.dumps(example, ensure_ascii=False) + "\n")
 
 
+def _append_markdown_example(path: Path, example: dict, example_index: int):
+    from src.V_utility.export import pipeline_to_markdown
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(f"<!-- Example {example_index} -->\n")
+        f.write(pipeline_to_markdown(example))
+        f.write("\n\n---\n\n")
+
+
 def _rewrite_markdown_from_jsonl(path: Path):
     try:
         from src.V_utility.export import pipeline_to_markdown
@@ -87,6 +101,30 @@ def _rewrite_markdown_from_jsonl(path: Path):
         md_path.write_text("".join(blocks), encoding="utf-8")
     except Exception as e:
         print(f"  {GREY}(markdown export skipped: {e}){RESET}")
+
+
+def _safe_slug(text: str, max_len: int = 48) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "_", (text or "").lower()).strip("_")
+    return (slug or "task")[:max_len]
+
+
+def _parts_dir_for_output(output_path: Path) -> Path:
+    return output_path.parent / f"{output_path.stem}_parts"
+
+
+def _example_artifact_paths(parts_dir: Path, job: dict) -> tuple[Path, Path]:
+    stem = f"{job['seq']:04d}_{job['domain_key']}_{_safe_slug(job['task'])}"
+    return parts_dir / f"{stem}.json", parts_dir / f"{stem}.md"
+
+
+def _write_example_artifacts(parts_dir: Path, job: dict, example: dict):
+    from src.V_utility.export import pipeline_to_markdown
+
+    parts_dir.mkdir(parents=True, exist_ok=True)
+    json_path, md_path = _example_artifact_paths(parts_dir, job)
+    json_path.write_text(json.dumps(example, indent=2, ensure_ascii=False), encoding="utf-8")
+    md_path.write_text(pipeline_to_markdown(example), encoding="utf-8")
+    return json_path, md_path
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +207,94 @@ def generate_dataset(
     return results
 
 
+def _build_generation_jobs(
+    domain_keys: list[str],
+    limit_per_domain=None,
+    output_path: Path | None = None,
+    resume: bool = True,
+    verbose: bool = True,
+    pipeline_mode: str = "simple",
+) -> list[dict]:
+    seeds = load_seed_prompts()
+    jobs = []
+    next_seq = len(_read_jsonl(output_path)) + 1 if output_path and output_path.exists() else 1
+
+    for domain_key in domain_keys:
+        domain_info = seeds["domains"].get(domain_key)
+        if not domain_info:
+            raise ValueError(f"Unknown domain '{domain_key}'. Available: {list(seeds['domains'].keys())}")
+
+        prompts = domain_info["prompts"][:limit_per_domain] if limit_per_domain else domain_info["prompts"]
+        already_done = 0
+        if resume and output_path:
+            already_done = _count_by_domain(output_path).get(domain_key, 0)
+            if already_done and verbose:
+                print(f"  {GREY}Resume: skipping first {already_done} saved prompt(s) in {domain_key}.{RESET}")
+
+        prompts = prompts[already_done:]
+        total_prompts = len(prompts)
+
+        for i, task in enumerate(prompts, 1):
+            jobs.append(
+                {
+                    "seq": next_seq,
+                    "task": task,
+                    "domain_key": domain_key,
+                    "domain_label": domain_info["label"],
+                    "pipeline_mode": pipeline_mode,
+                    "domain_position": already_done + i,
+                    "domain_total": already_done + total_prompts,
+                }
+            )
+            next_seq += 1
+
+    return jobs
+
+
+def _run_generation_job(job: dict, generate_fn=None, get_thread_generate_fn=None) -> dict:
+    pipeline_mode, run_pipeline, validate_pipeline = _resolve_pipeline_mode(job["pipeline_mode"])
+    local_generate_fn = get_thread_generate_fn() if get_thread_generate_fn else generate_fn
+    if local_generate_fn is None:
+        raise ValueError("A generate function or thread-local generate function provider is required.")
+
+    owner = getattr(local_generate_fn, "owner", None)
+    if owner and hasattr(owner, "clear"):
+        owner.clear()
+
+    start = time.time()
+    example = run_pipeline(
+        task=job["task"],
+        generate_fn=local_generate_fn,
+        domain=job["domain_label"],
+        verbose=False,
+    )
+    elapsed = round(time.time() - start, 1)
+    errors = validate_pipeline(example)
+
+    existing_meta = example.get("_meta", {})
+    example["_meta"] = {
+        **existing_meta,
+        "domain_key": job["domain_key"],
+        "pipeline_mode": pipeline_mode,
+        "elapsed_sec": elapsed,
+        "timestamp": datetime.now().isoformat(),
+        "validation_errors": errors,
+        "parallel_seq": job["seq"],
+    }
+    return {"job": job, "example": example, "elapsed": elapsed, "errors": errors}
+
+
+def _make_thread_local_generate_fn(worker_factory):
+    state = threading.local()
+
+    def get_thread_generate_fn():
+        if not hasattr(state, "generate_fn"):
+            state.generate_fn = worker_factory()
+        return state.generate_fn
+
+    return get_thread_generate_fn
+
+
 def generate_many(
     domain_keys: list[str],
     generate_fn,
@@ -177,21 +303,106 @@ def generate_many(
     output_path: Path | None = None,
     resume=True,
     pipeline_mode: str = "simple",
+    parallel_workers: int = 1,
+    worker_factory=None,
 ) -> list[dict]:
-    all_results = []
-    for domain_key in domain_keys:
-        results = generate_dataset(
-            domain_key=domain_key,
+    if parallel_workers <= 1:
+        all_results = []
+        for domain_key in domain_keys:
+            results = generate_dataset(
+                domain_key=domain_key,
+                generate_fn=generate_fn,
+                limit=limit_per_domain,
+                verbose=verbose,
+                output_path=output_path,
+                resume=resume,
+                pipeline_mode=pipeline_mode,
+            )
+            all_results.extend(results)
+        return all_results
+
+    if worker_factory is None:
+        if verbose:
+            print(f"  {YELLOW}Parallel mode needs a worker factory. Falling back to sequential.{RESET}")
+        return generate_many(
+            domain_keys=domain_keys,
             generate_fn=generate_fn,
-            limit=limit_per_domain,
+            limit_per_domain=limit_per_domain,
             verbose=verbose,
             output_path=output_path,
             resume=resume,
             pipeline_mode=pipeline_mode,
+            parallel_workers=1,
+            worker_factory=None,
         )
-        all_results.extend(results)
-    return all_results
 
+    jobs = _build_generation_jobs(
+        domain_keys=domain_keys,
+        limit_per_domain=limit_per_domain,
+        output_path=output_path,
+        resume=resume,
+        verbose=verbose,
+        pipeline_mode=pipeline_mode,
+    )
+    if not jobs:
+        if verbose:
+            print(f"  {GREY}Nothing left to generate. All selected prompts are already saved.{RESET}")
+        return []
+
+    parts_dir = _parts_dir_for_output(output_path) if output_path else None
+    master_md_path = output_path.with_suffix(".md") if output_path else None
+    if output_path and resume and output_path.exists():
+        _rewrite_markdown_from_jsonl(output_path)
+
+    existing_total = len(_read_jsonl(output_path)) if output_path and output_path.exists() else 0
+    get_thread_generate_fn = _make_thread_local_generate_fn(worker_factory)
+    all_results = []
+    saved_count = 0
+
+    if verbose:
+        print(f"\n{GREEN}Parallel generation enabled:{RESET} {parallel_workers} worker threads")
+        print(f"  {GREEN}Writer mode:{RESET} per-example files + serial master append")
+
+    with ThreadPoolExecutor(max_workers=parallel_workers) as executor:
+        future_to_job = {
+            executor.submit(_run_generation_job, job, None, get_thread_generate_fn): job
+            for job in jobs
+        }
+
+        for future in as_completed(future_to_job):
+            job = future_to_job[future]
+            try:
+                payload = future.result()
+            except Exception as e:
+                print(f"\n{RED}Generation failed{RESET} [{job['domain_key']}] {job['task'][:90]}")
+                print(f"  {RED}{e}{RESET}")
+                raise
+
+            example = payload["example"]
+            errors = payload["errors"]
+            elapsed = payload["elapsed"]
+            all_results.append(example)
+
+            if output_path:
+                if parts_dir:
+                    _write_example_artifacts(parts_dir, job, example)
+                _append_example(output_path, example)
+                if master_md_path:
+                    _append_markdown_example(master_md_path, example, existing_total + saved_count + 1)
+
+            saved_count += 1
+            if verbose:
+                print(f"\n{BOLD}{'#'*60}{RESET}")
+                print(f"  {BOLD}[done {saved_count}/{len(jobs)}]{RESET} [{job['domain_key']}] {job['domain_position']}/{job['domain_total']}")
+                print(f"  {job['task'][:100]}")
+                print(f"  elapsed: {elapsed}s")
+                if errors:
+                    print(f"  {YELLOW}[QA] Validation: {errors}{RESET}")
+                if output_path:
+                    print(f"  {GREEN}Saved example -> {output_path.name}{RESET}")
+                print(f"{'#'*60}")
+
+    return all_results
 
 # ---------------------------------------------------------------------------
 # TUI helpers
@@ -317,6 +528,20 @@ def _pick_output_path(domain_keys: list[str], pipeline_mode: str) -> tuple[Path,
     return OUTPUT_DIR / _build_output_name(domain_keys, pipeline_mode=pipeline_mode), False
 
 
+def _pick_parallel_workers(backend: str) -> int:
+    if backend != "ollama":
+        print(f"\n{GREY}Parallel workers are disabled for Hugging Face on local Mac. One in-process model is safer.{RESET}")
+        return 1
+
+    cpu_count = os.cpu_count() or 4
+    default_workers = min(4, cpu_count)
+    print(f"\n{YELLOW}Parallel worker threads (Ollama only):{RESET}")
+    print(f"  {GREY}2-4 is usually the sweet spot on Mac. Higher is not always faster.{RESET}")
+    raw = input(f"\n  Workers [{default_workers}]: ").strip() or str(default_workers)
+    workers = int(raw) if raw.isdigit() else default_workers
+    return max(1, workers)
+
+
 # ---------------------------------------------------------------------------
 # Interactive TUI
 # ---------------------------------------------------------------------------
@@ -359,8 +584,12 @@ def _tui():
     backend, model_alias = _pick_backend_and_model()
     if backend == "ollama":
         generate_fn = load_ollama_gemma4(model=model_alias, thinking=False, use_memory=False)
+        worker_factory = lambda: load_ollama_gemma4(model=model_alias, thinking=False, use_memory=False)
     else:
         generate_fn = load_gemma4(model=model_alias, thinking=False, use_memory=False)
+        worker_factory = None
+
+    parallel_workers = _pick_parallel_workers(backend)
 
     try:
         all_results = generate_many(
@@ -371,6 +600,8 @@ def _tui():
             output_path=output_path,
             resume=resume,
             pipeline_mode=pipeline_mode,
+            parallel_workers=parallel_workers,
+            worker_factory=worker_factory,
         )
     except KeyboardInterrupt:
         print(f"\n{YELLOW}Stopped by user. Saved progress remains in:{RESET} {output_path.resolve()}")
