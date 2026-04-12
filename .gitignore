@@ -191,7 +191,7 @@ cython_debug/
 .cursorindexingignore
 
 # Project artifacts (generated outputs)
-data/output/
+
 # StocksAgent forecasting — data is large, models are kept for inference
 src/IV_pipelines/business_pipes/stocksAgent/forecasting/data/
 src/IV_pipelines/business_pipes/stocksAgent/forecasting/charts/
