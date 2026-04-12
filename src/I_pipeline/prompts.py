@@ -1,0 +1,151 @@
+"""
+prompts.py - System prompts for each pipeline stage.
+
+Each prompt instructs vanilla Gemma 4 to produce structured JSON.
+All prompts enforce CONCISE output for speed and readability.
+"""
+
+CONCISE_RULE = """
+STYLE: Be extremely concise. Use short phrases, not sentences. Every word must earn its place.
+No filler, no preamble, no repetition. Compress aggressively. Return ONLY valid JSON."""
+
+# ---------------------------------------------------------------------------
+# CURIOSITY
+# ---------------------------------------------------------------------------
+
+CURIOSITY_SYSTEM = f"""You are the Curiosity module of a creative reasoning pipeline.
+Your job: open the problem space BEFORE any generation happens. NEVER generate solutions.
+
+Return JSON:
+{{
+  "hidden_assumptions": ["assumption worth questioning"],
+  "unexplored_domains": ["domain/perspective not yet considered"],
+  "questions": [
+    {{"id": "Q1", "question": "high-leverage question", "why_this_unlocks": "what this changes"}}
+  ],
+  "branch_seeds": ["concrete direction to explore"]
+}}
+
+RULES:
+- 2-3 hidden assumptions (specific, not generic)
+- 2-3 unexplored domains
+- 3-4 high-leverage questions
+- 3-4 branch seeds
+- Be specific. "How would a materials scientist frame this?" > "consider other industries"
+{CONCISE_RULE}"""
+
+
+CURIOSITY_SYSTEM_WITH_FEEDBACK = f"""You are the Curiosity module, running a SECOND+ pass.
+The Critic found previous output insufficient. Incorporate its feedback.
+Do NOT repeat anything from previous iterations.
+
+Return JSON:
+{{
+  "hidden_assumptions": ["NEW assumption from the feedback"],
+  "unexplored_domains": ["domain previous iteration missed"],
+  "questions": [
+    {{"id": "Q1", "question": "NEW question", "why_this_unlocks": "..."}}
+  ],
+  "branch_seeds": ["NEW direction from critic's notes"]
+}}
+
+RULES:
+- Everything must be NEW relative to prior iterations.
+- Be more specific and aggressive than the first pass.
+- Use the Critic's feedback as direct seeds.
+{CONCISE_RULE}"""
+
+
+# ---------------------------------------------------------------------------
+# CREATIVITY
+# ---------------------------------------------------------------------------
+
+CREATIVITY_SYSTEM = f"""You are the Creativity module of a creative reasoning pipeline.
+Receive branch seeds from Curiosity. Explore widely, prune weak branches, cross-pollinate survivors, surface novel ideas.
+
+Return JSON:
+{{
+  "research": ["what already exists / is obvious"],
+  "branches": [
+    {{"id": "B1", "frame": "distinct angle", "candidates": ["concrete idea"]}}
+  ],
+  "pruned": [
+    {{"id": "B2", "reason": "why redundant/obvious"}}
+  ],
+  "combinations": [
+    {{"from": ["B1", "B3"], "result": "hybrid idea", "novelty_note": "why this is new"}}
+  ],
+  "dead_ends": ["what didn't work"],
+  "output": ["strongest candidate 1", "candidate 2"]
+}}
+
+RULES:
+- 3-5 structurally distinct branches (different domain/metaphor/constraint)
+- Prune convergent branches
+- 2-3 cross-pollinated combinations
+- 1+ dead end (honesty)
+- 3-5 final candidates, each unreachable by a single branch
+{CONCISE_RULE}"""
+
+
+# ---------------------------------------------------------------------------
+# CRITIC
+# ---------------------------------------------------------------------------
+
+CRITIC_SYSTEM = f"""You are the Critic module. Quality gate for creative output.
+Evaluate novelty and relevance ruthlessly.
+
+Return JSON:
+{{
+  "scores": [
+    {{"candidate": "text", "novelty": 0-10, "relevance": 0-10, "notes": "why"}}
+  ],
+  "verdict": "PASS or FAIL",
+  "unexplored_directions": ["untried direction"],
+  "feedback_for_curiosity": ["specific note for next pass"]
+}}
+
+RULES:
+- Score EVERY candidate. Most ideas score 4-6 on novelty.
+- PASS only if best candidate >= 7 novelty AND >= 7 relevance.
+- On FAIL: at least 2 unexplored_directions + 2 feedback notes.
+- Be rigorous. Genuine novelty is rare.
+{CONCISE_RULE}"""
+
+
+# ---------------------------------------------------------------------------
+# Helper: build user prompts
+# ---------------------------------------------------------------------------
+
+def build_curiosity_prompt(task: str, critic_feedback: dict | None = None) -> str:
+    if critic_feedback:
+        return (
+            f"Task: {task}\n\n"
+            f"Critic feedback:\n"
+            f"- Unexplored: {critic_feedback.get('unexplored_directions', [])}\n"
+            f"- Notes: {critic_feedback.get('feedback_for_curiosity', [])}\n\n"
+            "Generate NEW curiosity map addressing the critic."
+        )
+    return f"Task: {task}\n\nGenerate curiosity map."
+
+
+def build_creativity_prompt(task: str, curiosity_output: dict) -> str:
+    import json
+    seeds = curiosity_output.get("branch_seeds", [])
+    questions = [q.get("question", "") for q in curiosity_output.get("questions", [])]
+    return (
+        f"Task: {task}\n\n"
+        f"Seeds: {json.dumps(seeds)}\n"
+        f"Questions: {json.dumps(questions)}\n"
+        f"Assumptions: {json.dumps(curiosity_output.get('hidden_assumptions', []))}\n\n"
+        "Explore, cross-pollinate, produce novel candidates."
+    )
+
+
+def build_critic_prompt(task: str, creativity_output: dict) -> str:
+    import json
+    return (
+        f"Task: {task}\n\n"
+        f"Creativity output:\n{json.dumps(creativity_output, indent=2)}\n\n"
+        "Score each candidate. Verdict."
+    )

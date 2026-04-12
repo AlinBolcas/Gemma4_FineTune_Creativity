@@ -1,0 +1,29 @@
+#
+# Local macOS baseline for:
+# - Jupyter notebooks
+# - Gemma/Hugging Face experimentation
+# - dataset generation and evaluation tooling
+#
+# We keep GPU-specific cloud training packages out of the local Mac env for now.
+# Add them later in Kaggle/Colab where the actual fine-tuning will run.
+#
+jupyterlab
+ipykernel
+notebook
+ipywidgets
+torch
+transformers
+accelerate
+datasets
+trl
+peft
+huggingface_hub
+sentencepiece
+protobuf
+pillow
+requests
+gradio
+kagglehub
+python-dotenv
+torchvision
+plotly

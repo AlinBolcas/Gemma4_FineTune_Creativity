@@ -1,0 +1,110 @@
+{
+  "_note": "Seed prompts are just examples. The pipeline accepts ANY task — domain is only a metadata label.",
+  "domains": {
+    "naming_branding": {
+      "label": "Naming & Branding",
+      "prompts": [
+        "Generate names for an AI-powered creative studio that helps musicians compose",
+        "Create a brand name for a biotech startup focused on gut microbiome therapeutics",
+        "Name a nonprofit that teaches critical thinking to teenagers through debate",
+        "Design a tagline for an AI ethics consultancy that audits algorithms for bias",
+        "Rebrand a 100-year-old public library system for the digital age",
+        "Name a climate-tech company that converts atmospheric CO2 into building materials",
+        "Create a name for an app that pairs lonely elderly people with student volunteers",
+        "Name a speculative design studio that prototypes solutions for problems 20 years from now",
+        "Generate names for a multilingual education platform serving refugee communities",
+        "Name a wearable device that monitors stress through skin conductance and suggests interventions"
+      ]
+    },
+    "cross_domain_analogy": {
+      "label": "Cross-Domain Analogy",
+      "prompts": [
+        "Find a deep structural analogy between immune systems and market regulation",
+        "Map jazz improvisation onto software architecture design patterns",
+        "Draw a structural analogy between coral reef ecosystems and open-source communities",
+        "Find parallels between how forests recover from fire and how teams recover from failure",
+        "Map the structure of a symphony orchestra onto distributed computing systems",
+        "Find a deep analogy between how rivers form deltas and how startups find product-market fit",
+        "Draw structural parallels between the evolution of language and the evolution of programming languages",
+        "Map fermentation processes onto how ideas mature in creative teams",
+        "Find an analogy between how mycelial networks share nutrients and how knowledge spreads in organizations",
+        "Draw parallels between plate tectonics and paradigm shifts in science"
+      ]
+    },
+    "scientific_hypothesis": {
+      "label": "Scientific Hypothesis",
+      "prompts": [
+        "Generate hypotheses for why a promising Alzheimer's drug trial failed despite strong preclinical results",
+        "Propose alternative mechanisms for the observed placebo effect in pain management",
+        "Generate hypotheses for why identical twins sometimes develop different autoimmune diseases",
+        "Propose novel explanations for the Fermi paradox that haven't been widely discussed",
+        "Generate hypotheses for why sleep deprivation impairs creativity more than analytical reasoning"
+      ]
+    },
+    "strategic_reframing": {
+      "label": "Strategic Problem Reframing",
+      "prompts": [
+        "Reframe 'how do we increase school attendance?' as a systems problem with at least 3 alternative definitions",
+        "Reframe 'how do we reduce hospital readmissions?' by questioning what 'success' actually means",
+        "Find three alternative definitions of 'productivity' that would change what a company optimizes for",
+        "Reframe 'how do we fight misinformation?' by questioning the assumption that more information is the solution",
+        "Reframe 'how do we make AI safer?' by exploring what 'safety' means to different stakeholders"
+      ]
+    },
+    "speculative_design": {
+      "label": "Speculative & Future Design",
+      "prompts": [
+        "Design a society that has solved loneliness as a public health problem",
+        "What does education look like when AI tutors are ubiquitous and free?",
+        "Design a healthcare system optimized for prevention rather than treatment",
+        "What does democratic governance look like when real-time citizen input is technologically trivial?",
+        "Design a city where no commute exceeds 15 minutes and explain the second-order effects"
+      ]
+    },
+    "narrative_character": {
+      "label": "Narrative & Character Design",
+      "prompts": [
+        "Create a villain whose worldview is internally coherent and sympathetic",
+        "Design a non-human character with genuinely alien cognition that isn't just 'smart but weird'",
+        "Build a protagonist defined by a contradiction they never resolve",
+        "Design a story world where a physical law works differently and explore the social consequences",
+        "Create a mentor character whose advice is genuinely wrong but given in good faith"
+      ]
+    },
+    "philosophical_thought": {
+      "label": "Philosophical Thought Experiments",
+      "prompts": [
+        "Construct a thought experiment challenging the hard problem of consciousness",
+        "Reframe the trolley problem using a non-Western ethical framework",
+        "Design a thought experiment that reveals a hidden assumption in how we define intelligence",
+        "Construct an argument that makes a widely held moral intuition seem clearly wrong",
+        "Propose a new philosophical paradox about identity that hasn't been named yet"
+      ]
+    },
+    "product_ideation": {
+      "label": "Product & System Ideation",
+      "prompts": [
+        "Design an offline literacy tool for rural classrooms with no reliable electricity",
+        "Propose a novel approach to vaccine distribution tracking that works without smartphones",
+        "Design a mental health support system for contexts where therapy is culturally stigmatized",
+        "Invent a tool that helps first-generation university students navigate academic bureaucracy",
+        "Design a peer learning system that works in classrooms with 60+ students and one teacher"
+      ]
+    },
+    "everyday_creative": {
+      "label": "Everyday Creative Tasks",
+      "prompts": [
+        "Find a name for my sausage dog",
+        "Design a dinner party theme for 8 people who have nothing in common",
+        "Write a toast for a wedding where you barely know the couple",
+        "Come up with a birthday present idea for someone who says they don't want anything",
+        "Design a morning routine for someone who hates mornings"
+      ]
+    }
+  },
+  "eval_held_out": [
+    "What project ideas would you generate for the Gemma 4 Good Hackathon that would genuinely impress judges looking for novelty, technical depth, and real-world impact?",
+    "Design a creative mentorship system for students in under-resourced schools that doesn't require internet access",
+    "Generate names for a new field of study that combines neuroscience, design thinking, and indigenous knowledge systems"
+  ]
+}
