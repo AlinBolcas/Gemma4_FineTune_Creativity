@@ -127,6 +127,42 @@ def _write_example_artifacts(parts_dir: Path, job: dict, example: dict):
     return json_path, md_path
 
 
+def _render_progress_bar(done: int, total: int, width: int = 24) -> str:
+    if total <= 0:
+        return "[" + ("-" * width) + "]"
+    filled = min(width, int((done / total) * width))
+    return "[" + ("#" * filled) + ("-" * (width - filled)) + "]"
+
+
+def _summarize_jobs(jobs: list[dict]) -> list[str]:
+    counts: dict[str, int] = {}
+    for job in jobs:
+        counts[job["domain_key"]] = counts.get(job["domain_key"], 0) + 1
+    return [f"{key}={counts[key]}" for key in sorted(counts)]
+
+
+def _start_progress_monitor(state: dict, stop_event: threading.Event, interval_sec: int = 15):
+    def monitor():
+        while not stop_event.wait(interval_sec):
+            with state["lock"]:
+                total = state["total"]
+                completed = state["completed"]
+                active = state["active"]
+                started = state["started"]
+                failed = state["failed"]
+                elapsed = round(time.time() - state["started_at"], 1)
+                queued = max(0, total - started)
+                bar = _render_progress_bar(completed, total)
+            print(
+                f"\n{CYAN}[progress]{RESET} {bar} {completed}/{total} done"
+                f"  active={active} queued={queued} failed={failed} elapsed={elapsed}s"
+            )
+
+    thread = threading.Thread(target=monitor, daemon=True)
+    thread.start()
+    return thread
+
+
 # ---------------------------------------------------------------------------
 # Generation core
 # ---------------------------------------------------------------------------
@@ -251,7 +287,13 @@ def _build_generation_jobs(
     return jobs
 
 
-def _run_generation_job(job: dict, generate_fn=None, get_thread_generate_fn=None) -> dict:
+def _run_generation_job(
+    job: dict,
+    generate_fn=None,
+    get_thread_generate_fn=None,
+    on_start=None,
+    on_finish=None,
+) -> dict:
     pipeline_mode, run_pipeline, validate_pipeline = _resolve_pipeline_mode(job["pipeline_mode"])
     local_generate_fn = get_thread_generate_fn() if get_thread_generate_fn else generate_fn
     if local_generate_fn is None:
@@ -261,27 +303,38 @@ def _run_generation_job(job: dict, generate_fn=None, get_thread_generate_fn=None
     if owner and hasattr(owner, "clear"):
         owner.clear()
 
-    start = time.time()
-    example = run_pipeline(
-        task=job["task"],
-        generate_fn=local_generate_fn,
-        domain=job["domain_label"],
-        verbose=False,
-    )
-    elapsed = round(time.time() - start, 1)
-    errors = validate_pipeline(example)
+    if on_start:
+        on_start(job)
 
-    existing_meta = example.get("_meta", {})
-    example["_meta"] = {
-        **existing_meta,
-        "domain_key": job["domain_key"],
-        "pipeline_mode": pipeline_mode,
-        "elapsed_sec": elapsed,
-        "timestamp": datetime.now().isoformat(),
-        "validation_errors": errors,
-        "parallel_seq": job["seq"],
-    }
-    return {"job": job, "example": example, "elapsed": elapsed, "errors": errors}
+    start = time.time()
+    try:
+        example = run_pipeline(
+            task=job["task"],
+            generate_fn=local_generate_fn,
+            domain=job["domain_label"],
+            verbose=False,
+        )
+        elapsed = round(time.time() - start, 1)
+        errors = validate_pipeline(example)
+
+        existing_meta = example.get("_meta", {})
+        example["_meta"] = {
+            **existing_meta,
+            "domain_key": job["domain_key"],
+            "pipeline_mode": pipeline_mode,
+            "elapsed_sec": elapsed,
+            "timestamp": datetime.now().isoformat(),
+            "validation_errors": errors,
+            "parallel_seq": job["seq"],
+        }
+        if on_finish:
+            on_finish(job, elapsed, False)
+        return {"job": job, "example": example, "elapsed": elapsed, "errors": errors}
+    except Exception:
+        elapsed = round(time.time() - start, 1)
+        if on_finish:
+            on_finish(job, elapsed, True)
+        raise
 
 
 def _make_thread_local_generate_fn(worker_factory):
@@ -358,49 +411,109 @@ def generate_many(
     get_thread_generate_fn = _make_thread_local_generate_fn(worker_factory)
     all_results = []
     saved_count = 0
+    state = {
+        "lock": threading.Lock(),
+        "started_at": time.time(),
+        "total": len(jobs),
+        "started": 0,
+        "completed": 0,
+        "active": 0,
+        "failed": 0,
+    }
+    stop_event = threading.Event()
 
     if verbose:
         print(f"\n{GREEN}Parallel generation enabled:{RESET} {parallel_workers} worker threads")
         print(f"  {GREEN}Writer mode:{RESET} per-example files + serial master append")
+        print(f"  {GREEN}Queued jobs:{RESET} {len(jobs)}")
+        print(f"  {GREEN}By domain:{RESET} {', '.join(_summarize_jobs(jobs))}")
+        for preview in jobs[:min(3, len(jobs))]:
+            print(f"  {GREY}next -> [{preview['domain_key']}] {preview['task'][:90]}{RESET}")
 
-    with ThreadPoolExecutor(max_workers=parallel_workers) as executor:
-        future_to_job = {
-            executor.submit(_run_generation_job, job, None, get_thread_generate_fn): job
-            for job in jobs
-        }
+    def on_start(job: dict):
+        with state["lock"]:
+            state["started"] += 1
+            state["active"] += 1
+            started = state["started"]
+            total = state["total"]
+            active = state["active"]
+        if verbose:
+            print(
+                f"\n{CYAN}[start {started}/{total}]{RESET} "
+                f"[{job['domain_key']}] {job['domain_position']}/{job['domain_total']}  active={active}"
+            )
+            print(f"  {GREY}{job['task'][:120]}{RESET}")
 
-        for future in as_completed(future_to_job):
-            job = future_to_job[future]
-            try:
-                payload = future.result()
-            except Exception as e:
-                print(f"\n{RED}Generation failed{RESET} [{job['domain_key']}] {job['task'][:90]}")
-                print(f"  {RED}{e}{RESET}")
-                raise
+    def on_finish(job: dict, elapsed: float, failed: bool):
+        with state["lock"]:
+            state["active"] = max(0, state["active"] - 1)
+            if failed:
+                state["failed"] += 1
+            active = state["active"]
+            failed_count = state["failed"]
+        if verbose:
+            status = "failed" if failed else "finished"
+            color = RED if failed else GREY
+            print(
+                f"  {color}[{status}]{RESET} "
+                f"[{job['domain_key']}] seq={job['seq']} elapsed={elapsed}s active={active} failed={failed_count}"
+            )
 
-            example = payload["example"]
-            errors = payload["errors"]
-            elapsed = payload["elapsed"]
-            all_results.append(example)
+    monitor_thread = _start_progress_monitor(state, stop_event, interval_sec=12) if verbose else None
 
-            if output_path:
-                if parts_dir:
-                    _write_example_artifacts(parts_dir, job, example)
-                _append_example(output_path, example)
-                if master_md_path:
-                    _append_markdown_example(master_md_path, example, existing_total + saved_count + 1)
+    try:
+        with ThreadPoolExecutor(max_workers=parallel_workers) as executor:
+            future_to_job = {
+                executor.submit(_run_generation_job, job, None, get_thread_generate_fn, on_start, on_finish): job
+                for job in jobs
+            }
 
-            saved_count += 1
-            if verbose:
-                print(f"\n{BOLD}{'#'*60}{RESET}")
-                print(f"  {BOLD}[done {saved_count}/{len(jobs)}]{RESET} [{job['domain_key']}] {job['domain_position']}/{job['domain_total']}")
-                print(f"  {job['task'][:100]}")
-                print(f"  elapsed: {elapsed}s")
-                if errors:
-                    print(f"  {YELLOW}[QA] Validation: {errors}{RESET}")
+            for future in as_completed(future_to_job):
+                job = future_to_job[future]
+                try:
+                    payload = future.result()
+                except Exception as e:
+                    print(f"\n{RED}Generation failed{RESET} [{job['domain_key']}] {job['task'][:90]}")
+                    print(f"  {RED}{e}{RESET}")
+                    raise
+
+                example = payload["example"]
+                errors = payload["errors"]
+                elapsed = payload["elapsed"]
+                all_results.append(example)
+
                 if output_path:
-                    print(f"  {GREEN}Saved example -> {output_path.name}{RESET}")
-                print(f"{'#'*60}")
+                    if parts_dir:
+                        _write_example_artifacts(parts_dir, job, example)
+                    _append_example(output_path, example)
+                    if master_md_path:
+                        _append_markdown_example(master_md_path, example, existing_total + saved_count + 1)
+
+                saved_count += 1
+                with state["lock"]:
+                    state["completed"] += 1
+                    completed = state["completed"]
+                    total = state["total"]
+                    active = state["active"]
+                    failed_count = state["failed"]
+                    bar = _render_progress_bar(completed, total)
+                if verbose:
+                    print(f"\n{BOLD}{'#'*60}{RESET}")
+                    print(
+                        f"  {BOLD}[done {saved_count}/{len(jobs)}]{RESET} "
+                        f"{bar} [{job['domain_key']}] {job['domain_position']}/{job['domain_total']}"
+                    )
+                    print(f"  {job['task'][:100]}")
+                    print(f"  elapsed: {elapsed}s  active={active} failed={failed_count}")
+                    if errors:
+                        print(f"  {YELLOW}[QA] Validation: {errors}{RESET}")
+                    if output_path:
+                        print(f"  {GREEN}Saved example -> {output_path.name}{RESET}")
+                    print(f"{'#'*60}")
+    finally:
+        stop_event.set()
+        if monitor_thread:
+            monitor_thread.join(timeout=1)
 
     return all_results
 
@@ -528,15 +641,27 @@ def _pick_output_path(domain_keys: list[str], pipeline_mode: str) -> tuple[Path,
     return OUTPUT_DIR / _build_output_name(domain_keys, pipeline_mode=pipeline_mode), False
 
 
-def _pick_parallel_workers(backend: str) -> int:
+def _pick_parallel_workers(backend: str, pipeline_mode: str, model_alias: str) -> int:
     if backend != "ollama":
         print(f"\n{GREY}Parallel workers are disabled for Hugging Face on local Mac. One in-process model is safer.{RESET}")
         return 1
 
     cpu_count = os.cpu_count() or 4
-    default_workers = min(4, cpu_count)
+    if pipeline_mode == "advanced":
+        default_workers = 1
+    elif str(model_alias).lower().strip() == "e4b":
+        default_workers = min(2, cpu_count)
+    else:
+        default_workers = min(4, cpu_count)
+
     print(f"\n{YELLOW}Parallel worker threads (Ollama only):{RESET}")
-    print(f"  {GREY}2-4 is usually the sweet spot on Mac. Higher is not always faster.{RESET}")
+    print(f"  {GREY}Use 1 for serial mode (no threading).{RESET}")
+    if pipeline_mode == "advanced":
+        print(f"  {GREY}Advanced pipeline is heavy. Recommended: 1 worker on Mac, maybe 2 max.{RESET}")
+    elif str(model_alias).lower().strip() == "e4b":
+        print(f"  {GREY}E4B is heavier than E2B. Recommended: 1-2 workers on Mac.{RESET}")
+    else:
+        print(f"  {GREY}Simple + E2B usually handles 2-4 workers best.{RESET}")
     raw = input(f"\n  Workers [{default_workers}]: ").strip() or str(default_workers)
     workers = int(raw) if raw.isdigit() else default_workers
     return max(1, workers)
@@ -589,7 +714,15 @@ def _tui():
         generate_fn = load_gemma4(model=model_alias, thinking=False, use_memory=False)
         worker_factory = None
 
-    parallel_workers = _pick_parallel_workers(backend)
+    parallel_workers = _pick_parallel_workers(backend, pipeline_mode, model_alias)
+
+    if backend == "ollama":
+        if pipeline_mode == "advanced" and parallel_workers > 2:
+            print(f"\n{YELLOW}Warning:{RESET} advanced + {model_alias} + {parallel_workers} workers may be slower than serial on this Mac.")
+        elif pipeline_mode == "advanced" and parallel_workers == 1:
+            print(f"\n{GREEN}Using serial mode for advanced generation.{RESET} Best for stability and more predictable progress.")
+        elif pipeline_mode == "simple" and parallel_workers == 1:
+            print(f"\n{GREEN}Using serial mode.{RESET} Slower overall, but easiest to reason about.")
 
     try:
         all_results = generate_many(
@@ -611,10 +744,35 @@ def _tui():
     valid = sum(1 for r in _read_jsonl(output_path) if not r.get("_meta", {}).get("validation_errors"))
     print(f"\n  {GREEN}Done:{RESET} {current_total} total saved, {valid} fully valid")
 
+    dataset_for_formatting = output_path
+    print(f"\n{YELLOW}Augment this raw dataset with Gemma 4 before SFT formatting? [y/N]{RESET}")
+    if input("  > ").strip().lower() in ("y", "yes"):
+        from src.II_dataGen.augment import augment_jsonl
+
+        default_rounds = 6
+        default_batch_size = 4 if backend == "hf" else 6
+
+        print(f"\n{YELLOW}Max augmentation rounds [{default_rounds}]:{RESET}")
+        rounds_raw = input("  > ").strip() or str(default_rounds)
+        max_rounds = int(rounds_raw) if rounds_raw.isdigit() else default_rounds
+
+        print(f"\n{YELLOW}Target new examples per round [{default_batch_size}]:{RESET}")
+        batch_raw = input("  > ").strip() or str(default_batch_size)
+        batch_size = int(batch_raw) if batch_raw.isdigit() else default_batch_size
+
+        summary = augment_jsonl(
+            input_path=output_path,
+            generator=generate_fn,
+            max_rounds=max_rounds,
+            batch_size=batch_size,
+            verbose=True,
+        )
+        dataset_for_formatting = summary["output_path"]
+
     print(f"\n{YELLOW}Convert this dataset to SFT training format and create train/eval/test splits? [y/N]{RESET}")
     if input("  > ").strip().lower() in ("y", "yes"):
         from src.II_dataGen.format_sft import process_jsonl
-        process_jsonl(output_path)
+        process_jsonl(dataset_for_formatting)
 
 
 if __name__ == "__main__":

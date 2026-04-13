@@ -82,7 +82,7 @@ def load_finetuned_gemma4(
     use_memory: bool = False,
     device: Optional[str] = None,
     max_new_tokens: int = 4096,
-    temperature: float = 1.0,
+    temperature: float = 0.618,
     top_p: float = 0.95,
     top_k: int = 64,
 ):

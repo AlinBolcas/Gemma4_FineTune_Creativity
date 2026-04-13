@@ -108,7 +108,7 @@ class OllamaGemma4:
         system: str = "You are a helpful assistant.",
         thinking: bool = False,
         use_memory: bool = True,
-        temperature: float = 0.8,
+        temperature: float = 0.618,
         max_new_tokens: int = 4096,
         top_p: float = 0.95,
         top_k: int = 64,

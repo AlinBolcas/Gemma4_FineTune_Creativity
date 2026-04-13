@@ -273,6 +273,11 @@ def _select_training_iterations(example: dict, pass_only: bool = True, last_pass
     return [loop[-1]] if last_pass_only else loop
 
 
+def _has_validation_errors(example: dict) -> bool:
+    errors = example.get("_meta", {}).get("validation_errors", [])
+    return bool(errors)
+
+
 def format_trace_as_text(
     example: dict,
     include_critic: bool = False,
@@ -410,12 +415,17 @@ def process_jsonl(
     include_critic: bool = False,
     pass_only: bool = True,
     last_pass_only: bool = True,
+    skip_invalid: bool = True,
 ):
     """Read raw pipeline JSONL, convert to SFT chat format, optionally create splits."""
     raw_examples = _read_jsonl(input_path)
     examples = []
-    skipped = 0
+    skipped_no_pass = 0
+    skipped_invalid = 0
     for raw in raw_examples:
+        if skip_invalid and _has_validation_errors(raw):
+            skipped_invalid += 1
+            continue
         row = convert_to_chat_format(
             raw,
             system_mode=system_mode,
@@ -424,7 +434,7 @@ def process_jsonl(
             last_pass_only=last_pass_only,
         )
         if row is None:
-            skipped += 1
+            skipped_no_pass += 1
             continue
         examples.append(row)
 
@@ -437,10 +447,12 @@ def process_jsonl(
         f"  {GREEN}Converted {len(examples)} examples -> "
         f"{output_path.relative_to(REPO_ROOT)}{RESET}"
     )
-    if skipped:
-        print(f"  {YELLOW}Skipped:{RESET} {skipped} example(s) without a PASS iteration")
+    if skipped_invalid:
+        print(f"  {YELLOW}Skipped invalid:{RESET} {skipped_invalid} example(s) with validation errors")
+    if skipped_no_pass:
+        print(f"  {YELLOW}Skipped no PASS:{RESET} {skipped_no_pass} example(s) without a PASS iteration")
     print(f"  {GREEN}System prompt mode:{RESET} {system_mode}")
-    print(f"  {GREEN}Training trace mode:{RESET} last PASS only, critic removed")
+    print(f"  {GREEN}Training trace mode:{RESET} last PASS only, critic removed, invalid rows skipped")
 
     if split:
         train, eval_set, test = _split_examples(examples)
@@ -539,8 +551,12 @@ def _tui():
 
     combined_path = INPUT_DIR / f"{_combined_stem(files)}_sft.jsonl"
     examples = []
-    skipped = 0
+    skipped_no_pass = 0
+    skipped_invalid = 0
     for raw in raw_examples:
+        if _has_validation_errors(raw):
+            skipped_invalid += 1
+            continue
         row = convert_to_chat_format(
             raw,
             system_mode=system_mode,
@@ -549,16 +565,18 @@ def _tui():
             last_pass_only=True,
         )
         if row is None:
-            skipped += 1
+            skipped_no_pass += 1
             continue
         examples.append(row)
     _ensure_dirs()
     _write_jsonl(examples, combined_path)
     print(f"  {GREEN}Combined:{RESET} {combined_path.relative_to(REPO_ROOT)} ({len(examples)})")
-    if skipped:
-        print(f"  {YELLOW}Skipped:{RESET} {skipped} example(s) without a PASS iteration")
+    if skipped_invalid:
+        print(f"  {YELLOW}Skipped invalid:{RESET} {skipped_invalid} example(s) with validation errors")
+    if skipped_no_pass:
+        print(f"  {YELLOW}Skipped no PASS:{RESET} {skipped_no_pass} example(s) without a PASS iteration")
     print(f"  {GREEN}System prompt mode:{RESET} {system_mode}")
-    print(f"  {GREEN}Training trace mode:{RESET} last PASS only, critic removed")
+    print(f"  {GREEN}Training trace mode:{RESET} last PASS only, critic removed, invalid rows skipped")
 
     if do_split:
         train, eval_set, test = _split_examples(examples)
