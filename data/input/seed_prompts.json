@@ -25,7 +25,9 @@
         "Design a dinner party theme for 8 people who have nothing in common, and make the format itself create connection.",
         "Invent a rainy-day game for two bored children using only paper and tape, but it should get better after the first round.",
         "Create a morning ritual for someone who hates routines but wants to feel more imaginative before work.",
-        "Redesign a thank-you note for someone you barely know so it feels sincere without sounding generic."
+        "Redesign a thank-you note for someone you barely know so it feels sincere without sounding generic.",
+        "Design a new way to celebrate a personal failure so it feels like a genuine milestone rather than a pity party.",
+        "Create a system for a shared household fridge that reduces friction without using labels or rigid rules."
       ]
     },
     "naming_branding": {
@@ -36,7 +38,9 @@
         "Name a nonprofit that teaches critical thinking to teenagers through debate without sounding academic or preachy.",
         "Rebrand a 100-year-old public library for the digital age while preserving its civic dignity.",
         "Name a multilingual education platform for refugee communities that feels locally human, not NGO generic.",
-        "Invent a name for a new discipline combining neuroscience, design, and indigenous knowledge systems, and make it feel like a real field."
+        "Invent a name for a new discipline combining neuroscience, design, and indigenous knowledge systems, and make it feel like a real field.",
+        "Name a high-end restaurant where the menu is dictated entirely by local foraging, avoiding words like rustic or wild.",
+        "Brand a radical honesty dating app without using the words truth, real, or bare."
       ]
     },
     "teaching_explanation": {
@@ -47,7 +51,9 @@
         "Teach photosynthesis using only kitchen objects, but avoid the usual factory analogy.",
         "Create a way to explain inflation to adults with no economics background without using money metaphors.",
         "Design an exercise that helps students notice their own hidden assumptions while solving a problem.",
-        "Invent a visual notation for teaching feedback loops to teenagers so they can use it across subjects."
+        "Invent a visual notation for teaching feedback loops to teenagers so they can use it across subjects.",
+        "Explain the concept of compound interest to a high schooler by using an analogy of a spreading rumor.",
+        "Design a physical classroom game that perfectly illustrates the prisoner's dilemma."
       ]
     },
     "product_service_ideation": {
@@ -58,7 +64,9 @@
         "Design a peer-learning system for classrooms with 60+ students and one teacher, where the bottleneck becomes a feature.",
         "Propose a novel approach to vaccine distribution tracking that works without smartphones, stable internet, or centralized trust.",
         "Create a mental health support system for contexts where therapy is culturally stigmatized, but do not frame it as therapy.",
-        "Design a system that helps elderly people preserve life stories without typing, and makes the stories easier to revisit than to record."
+        "Design a system that helps elderly people preserve life stories without typing, and makes the stories easier to revisit than to record.",
+        "Invent a service that turns long daily commutes on public transit into a highly desired part of the day.",
+        "Design a smart home device that intentionally introduces small, delightful inefficiencies to combat hyper-optimization."
       ]
     },
     "scientific_hypothesis": {
@@ -69,7 +77,9 @@
         "Generate hypotheses for why identical twins sometimes develop different autoimmune diseases, and identify what data would discriminate among them.",
         "Suggest non-obvious explanations for why sleep deprivation harms creativity more than analytical reasoning.",
         "Propose rival explanations for why some ecosystems recover after fire while others tip into collapse.",
-        "Invent a hypothesis for a phenomenon that looks contradictory at first glance, then describe the hidden variable that could reconcile it."
+        "Invent a hypothesis for a phenomenon that looks contradictory at first glance, then describe the hidden variable that could reconcile it.",
+        "Generate hypotheses for why a specific species of bird thrives only in the noise of a dense metropolis, contrary to all ecological models.",
+        "Propose an alternative explanation for the Fermi Paradox that assumes intelligent life actively hides for a specific, logical reason."
       ]
     },
     "strategic_reframing": {
@@ -80,7 +90,9 @@
         "Find three alternative definitions of productivity that would completely change what a company optimizes for.",
         "Reframe 'how do we fight misinformation?' without assuming that more facts are the solution.",
         "Reframe 'how do we make AI safer?' from the viewpoint of three stakeholders whose values genuinely conflict.",
-        "Reframe 'how do we solve burnout?' without centering the individual as the main unit of change."
+        "Reframe 'how do we solve burnout?' without centering the individual as the main unit of change.",
+        "Reframe 'how do we stop employee turnover?' into a problem where turnover is actually a healthy goal.",
+        "Reframe 'how do we eliminate traffic congestion?' without adding more roads or reducing the number of cars."
       ]
     },
     "cross_domain_analogy": {
@@ -91,7 +103,9 @@
         "Draw a structural analogy between coral reefs and open-source communities, and identify one misleading overlap.",
         "Find parallels between forest recovery after fire and how teams recover from failure, but focus on system dynamics rather than emotion words.",
         "Map the structure of a legal appeals process onto machine learning model refinement.",
-        "Find an analogy between mycelial nutrient sharing and how tacit knowledge moves inside organizations, then show what the analogy cannot explain."
+        "Find an analogy between mycelial nutrient sharing and how tacit knowledge moves inside organizations, then show what the analogy cannot explain.",
+        "Find a structural analogy between the formation of a black hole and a company undergoing rapid hyper-growth.",
+        "Map the process of distilling a fine whiskey onto the process of editing a messy first draft of a novel."
       ]
     },
     "narrative_worldbuilding": {
@@ -102,7 +116,9 @@
         "Build a protagonist defined by a contradiction that makes them effective in one context and destructive in another.",
         "Design a story world where one physical law works differently, then trace the second-order social consequences.",
         "Create a mentor whose advice is sincerely wise inside one moral framework and systematically harmful inside another.",
-        "Invent a city whose architecture reveals its political system better than any speech could."
+        "Invent a city whose architecture reveals its political system better than any speech could.",
+        "Design a society where memory is a currency that can be traded, and describe the new forms of poverty it creates.",
+        "Create a world where gravity fluctuates predictably based on the moon, and trace the impact on its architecture."
       ]
     },
     "philosophical_reasoning": {
@@ -113,7 +129,9 @@
         "Design a thought experiment that reveals a hidden assumption in how we define intelligence.",
         "Construct an argument that makes a widely held moral intuition feel unstable rather than simply wrong.",
         "Invent a new paradox about identity that could only arise in a networked, AI-mediated society.",
-        "Challenge the assumption that authenticity is always a virtue by creating a case where performance is ethically superior."
+        "Challenge the assumption that authenticity is always a virtue by creating a case where performance is ethically superior.",
+        "Design a thought experiment that questions whether extreme longevity would actually destroy the concept of urgency.",
+        "Challenge the idea that empathy is always good by constructing a scenario where perfect empathy leads to total paralysis."
       ]
     },
     "systems_future_design": {
@@ -124,7 +142,9 @@
         "Design a healthcare system optimized for prevention rather than treatment, and identify who would resist it most.",
         "Imagine democratic governance when real-time citizen input is trivial, then describe the new bottleneck.",
         "Design a city where no commute exceeds 15 minutes, and trace the unintended second-order effects.",
-        "Imagine a labor market where most coordination work is automated; what new social frictions appear?"
+        "Imagine a labor market where most coordination work is automated; what new social frictions appear?",
+        "Design a food distribution system in a future where weather patterns change unpredictably every 48 hours.",
+        "Imagine a legal system where AI judges are perfectly unbiased, then identify the new, massive flaw this introduces."
       ]
     }
   },

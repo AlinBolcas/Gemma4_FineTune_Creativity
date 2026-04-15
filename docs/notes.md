@@ -27,3 +27,5 @@ I was seeking to find the formula for general creativity.
 - creativity is a very if not the most subjective field, so it's not trivial to come up with a system to score performance on that metric.
 - not trained on the advanced pipeline (advanced method has proven better results, but takes 3 times longer)
 - way too few sythentic data examples (limited time and hardware compute)
+- there's arguably no reason to fine-tune, other than reducing latency from having to running through the pipeline at inference time - unless some generalisation occurs which actually makes the model approach ideas more creatively thanks to the fine-tunning process
+- it's still inconclusive if the results are actually more creative

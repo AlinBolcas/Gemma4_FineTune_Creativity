@@ -157,9 +157,31 @@ def export_eval(results: list[dict], output_path: Path | None = None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_path = REPO_ROOT / "data" / "output" / f"eval_{timestamp}.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w") as f:
+    
+    # Save JSON
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
     print(f"  {GREEN}Saved: {output_path.name}{RESET}")
+    
+    # Save Markdown
+    md_path = output_path.with_suffix(".md")
+    md_lines = ["# 3-Tier Evaluation Results\n"]
+    for i, row in enumerate(results, 1):
+        md_lines.append(f"## Prompt {i}")
+        md_lines.append(f"> {row.get('prompt', '')}\n")
+        md_lines.append("### Tier 1: Vanilla")
+        md_lines.append(f"{row.get('tier1_vanilla', '')}\n")
+        md_lines.append("### Tier 2: Scaffolded")
+        md_lines.append(f"*(Mode: {row.get('tier2_mode', '')})*\n")
+        md_lines.append(f"{row.get('tier2_scaffolded', '')}\n")
+        md_lines.append("### Tier 3: Fine-Tuned")
+        md_lines.append(f"*(Mode: {row.get('tier3_mode', '')})*\n")
+        md_lines.append(f"{row.get('tier3_tuned', '')}\n")
+        md_lines.append("---\n")
+    
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(md_lines))
+    print(f"  {GREEN}Saved: {md_path.name}{RESET}")
 
 
 # ---------------------------------------------------------------------------
