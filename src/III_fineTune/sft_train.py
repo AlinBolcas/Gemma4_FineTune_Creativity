@@ -476,8 +476,8 @@ def _train_unsloth(config: dict):
 
     trainer = train_on_responses_only(
         trainer,
-        instruction_part="<start_of_turn>user\n",
-        response_part="<start_of_turn>model\n",
+        instruction_part="<|turn>user\n",
+        response_part="<|turn>model\n",
     )
 
     print("\nStarting Unsloth training...")

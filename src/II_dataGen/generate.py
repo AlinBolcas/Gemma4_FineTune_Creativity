@@ -72,6 +72,34 @@ def _count_by_domain(path: Path) -> dict[str, int]:
     return counts
 
 
+def _pick_existing_dataset_file() -> Path | None:
+    existing = sorted(OUTPUT_DIR.glob("*.jsonl"))
+    if not existing:
+        print(f"  {YELLOW}No existing output datasets found in data/output/.{RESET}")
+        return None
+
+    print(f"\n{YELLOW}Reference dataset:{RESET}")
+    for i, path in enumerate(existing, 1):
+        counts = _count_by_domain(path)
+        covered = len(counts)
+        total = sum(counts.values())
+        print(f"  [{i}] {path.name}  {GREY}(rows={total}, domains={covered}){RESET}")
+
+    raw = input("\n  Choice [1]: ").strip() or "1"
+    idx = int(raw) - 1 if raw.isdigit() and 1 <= int(raw) <= len(existing) else 0
+    return existing[idx]
+
+
+def _dedupe_keep_order(items: list[str]) -> list[str]:
+    seen = set()
+    result = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+
 def _append_example(path: Path, example: dict):
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "a", encoding="utf-8") as f:
@@ -561,11 +589,20 @@ def _pick_domain_keys(seeds: dict) -> list[str]:
 
     print(f"\n{YELLOW}Domain selection mode:{RESET}")
     print("  [1] one domain")
+    print(f"      {GREY}Generate prompts from exactly one domain only.{RESET}")
     print("  [2] multiple domains")
+    print(f"      {GREY}You choose a few domains manually.{RESET}")
     print("  [3] all domains")
+    print(f"      {GREY}Use every domain in seed_prompts.json. Biggest run.{RESET}")
+    print("  [6] uncovered domains from existing dataset")
+    print(f"      {GREY}Only domains missing from a reference dataset. Falls back if none are missing.{RESET}")
+    print("  [7] lowest-count domains from existing dataset")
+    print(f"      {GREY}Focus on the least-represented domains in a reference dataset.{RESET}")
     if rec:
         print("  [4] recommended fast small run")
+        print(f"      {GREY}Quick smoke test. Smallest useful subset.{RESET}")
         print("  [5] recommended strong generalization core")
+        print(f"      {GREY}Best medium-size subset for broad quality.{RESET}")
     mode = input("\n  Choice [1]: ").strip() or "1"
 
     if mode == "3":
@@ -574,6 +611,44 @@ def _pick_domain_keys(seeds: dict) -> list[str]:
         return list(rec["fast_small_run"])
     if mode == "5" and rec.get("strong_generalization_core"):
         return list(rec["strong_generalization_core"])
+    if mode in {"6", "7"}:
+        ref_path = _pick_existing_dataset_file()
+        if ref_path is None:
+            return domain_keys
+
+        counts = _count_by_domain(ref_path)
+        missing = [key for key in domain_keys if counts.get(key, 0) == 0]
+
+        print(f"\n{YELLOW}Domain coverage in {ref_path.name}:{RESET}")
+        for i, key in enumerate(domain_keys, 1):
+            label = seeds["domains"][key]["label"]
+            print(f"  [{i}] {label:<45} {counts.get(key, 0)}")
+
+        if mode == "6":
+            if missing:
+                print(f"\n{GREEN}Selecting uncovered domains:{RESET} {', '.join(missing)}")
+                return missing
+            print(f"\n{YELLOW}All domains already appear at least once in that dataset.{RESET}")
+            raw = input("  Use the lowest-count domains instead? [Y/n]: ").strip().lower()
+            if raw not in ("", "y", "yes"):
+                return domain_keys
+
+        min_count = min(counts.get(key, 0) for key in domain_keys)
+        lowest = [key for key in domain_keys if counts.get(key, 0) == min_count]
+        default = ",".join(str(domain_keys.index(key) + 1) for key in lowest[:4]) or "1"
+        print(f"\n{YELLOW}Lowest-count domains:{RESET}")
+        for key in lowest:
+            print(f"  - {seeds['domains'][key]['label']} ({counts.get(key, 0)})")
+        raw = input(f"\n  Pick multiple from lowest-count set (e.g. {default}) [{default}]: ").strip() or default
+        picks = []
+        for part in raw.split(","):
+            part = part.strip()
+            if part.isdigit():
+                idx = int(part)
+                if 1 <= idx <= len(domain_keys):
+                    picks.append(domain_keys[idx - 1])
+        filtered = [key for key in _dedupe_keep_order(picks) if key in lowest]
+        return filtered or lowest
 
     print(f"\n{YELLOW}Domains:{RESET}")
     for i, key in enumerate(domain_keys, 1):
@@ -589,12 +664,7 @@ def _pick_domain_keys(seeds: dict) -> list[str]:
                 idx = int(part)
                 if 1 <= idx <= len(domain_keys):
                     picks.append(domain_keys[idx - 1])
-        seen = set()
-        result = []
-        for key in picks:
-            if key not in seen:
-                seen.add(key)
-                result.append(key)
+        result = _dedupe_keep_order(picks)
         return result or [domain_keys[0]]
 
     raw = input("\n  Choice [1]: ").strip() or "1"
@@ -604,7 +674,9 @@ def _pick_domain_keys(seeds: dict) -> list[str]:
 def _pick_pipeline_mode() -> str:
     print(f"\n{YELLOW}Pipeline architecture:{RESET}")
     print("  [1] simple")
+    print(f"      {GREY}Faster. Good default for generating lots of training data.{RESET}")
     print("  [2] advanced")
+    print(f"      {GREY}Slower but deeper traces. Use when quality matters more than speed.{RESET}")
     raw = input("\n  Choice [1]: ").strip() or "1"
     return "advanced" if raw == "2" else "simple"
 
@@ -626,8 +698,10 @@ def _pick_output_path(domain_keys: list[str], pipeline_mode: str) -> tuple[Path,
     existing = sorted(OUTPUT_DIR.glob("*.jsonl"))
     print(f"\n{YELLOW}Output mode:{RESET}")
     print("  [1] new output file")
+    print(f"      {GREY}Recommended. Creates a fresh dataset file for this run.{RESET}")
     if existing:
         print("  [2] resume existing output file")
+        print(f"      {GREY}Only use this if you want to continue adding into an older file.{RESET}")
     raw = input("\n  Choice [1]: ").strip() or "1"
 
     if raw == "2" and existing:
@@ -692,6 +766,7 @@ def _tui():
 
     domain_keys = _pick_domain_keys(seeds)
     print(f"\n  {GREEN}Selected:{RESET} {', '.join(domain_keys)}")
+    print(f"  {GREY}Domain count:{RESET} {len(domain_keys)}")
 
     pipeline_mode = _pick_pipeline_mode()
     print(f"  {GREEN}Architecture:{RESET} {pipeline_mode}")
@@ -699,8 +774,11 @@ def _tui():
     smallest = min(len(seeds["domains"][k]["prompts"]) for k in domain_keys)
     default_limit = min(3, smallest)
     print(f"\n{YELLOW}How many prompts per domain? (max {smallest}) [{default_limit}]:{RESET}")
+    print(f"  {GREY}Example: 48 with 4 selected domains = 192 total generation jobs.{RESET}")
     limit_raw = input("  > ").strip() or str(default_limit)
     limit_per_domain = int(limit_raw) if limit_raw.isdigit() else default_limit
+    total_jobs = len(domain_keys) * limit_per_domain
+    print(f"  {GREEN}Planned jobs:{RESET} {len(domain_keys)} domains x {limit_per_domain} prompts = {total_jobs}")
 
     output_path, resume = _pick_output_path(domain_keys, pipeline_mode=pipeline_mode)
     print(f"\n  {GREEN}Output file:{RESET} {output_path.name}")
