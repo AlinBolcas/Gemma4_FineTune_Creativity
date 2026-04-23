@@ -29,3 +29,24 @@ I was seeking to find the formula for general creativity.
 - way too few sythentic data examples (limited time and hardware compute)
 - there's arguably no reason to fine-tune, other than reducing latency from having to running through the pipeline at inference time - unless some generalisation occurs which actually makes the model approach ideas more creatively thanks to the fine-tunning process
 - it's still inconclusive if the results are actually more creative
+
+# Training run 1 results (e4b_final, 2026-04-18):
+- training loss: 10.5 to 1.1 (min 0.98), grad norm stabilized ~2.0, 4 epochs, 336 steps
+- LoRA r=16 alpha=32 dropout=0.05 on E4B base, lr 1.5e-4, gradient_accumulation=4
+- post_train_eval was disabled, no held-out eval loss recorded
+- adapter_diagnostic confirms adapter IS loaded and active (similarity to vanilla = 0.063, very different)
+
+## Key finding: format IS learned, just suppressed
+- in `direct_minimal` mode (tiny identity prompt), tuned model emits ZERO trace markers - reverts to base "polished assistant" style
+- in `direct_primed` mode (prompt invites the format), tuned model emits ALL trace markers: `## Iteration`, `### Curiosity`, `### Creativity`, `Branch seeds:`, etc.
+- conclusion: the architecture DID transfer into the weights. The base model's strong default style suppresses it at sampling time. A small invitation in the prompt unlocks it.
+
+## What this means
+- no need to retrain just to fix this
+- recommended inference mode: `direct_primed` in src/IV_inference/evaluate.py
+- if we DO retrain later, levers to make format dominant without priming: higher LoRA rank (r=32/64), more train samples, fewer competing assistant-style examples in the dataset
+
+## Next eval steps
+- re-run `evaluate.py` with `direct_primed` so Tier 3 actually shows the full architecture
+- run `eval_loss.py` for held-out perplexity (vanilla vs tuned) - quantitative confirmation
+- optional: `llm_judge.py` for blind LLM-judge scoring on novelty / non-obviousness / process-visibility

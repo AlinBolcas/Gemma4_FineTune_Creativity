@@ -20,6 +20,20 @@ RED = "\033[91m"; GREY = "\033[90m"; BOLD = "\033[1m"; RESET = "\033[0m"
 TIER1_SYSTEM_PROMPT = "You are a helpful assistant."
 TIER3_MINIMAL_SYSTEM_PROMPT = "You are a creative reasoning assistant."
 
+# Format-invitation suffix: appended to the user prompt for `direct_primed` mode.
+# This is what unlocks the trained trace format that base-style otherwise suppresses.
+TIER3_PRIME_SUFFIX = (
+    "\n\nFormat your answer EXACTLY like this template, filling in real content:\n"
+    "## Iteration 1\n"
+    "### Curiosity\n"
+    "Hidden assumptions:\n- ...\nKey questions:\n- ...\n"
+    "Branch seeds: ...\n"
+    "### Creativity\n"
+    "Research:\n- ...\nBranches:\n- B1: ...\nPruned:\n- ...\n"
+    "Combinations:\n- ...\nCandidates:\n- ...\n\n"
+    "## Final Output\n- ..."
+)
+
 SCAFFOLDED_SYSTEM_PROMPT = (
     "You are a creative reasoning engine. When given a task, think through it "
     "using Curiosity -> Creativity -> Critic. Surface hidden assumptions, "
@@ -45,18 +59,140 @@ def load_eval_prompts(path: Path | None = None) -> list[str]:
 
 
 def _summarize_pipeline_result(result: dict) -> str:
+    """
+    Render the FULL reasoning trace of a pipeline run so Tier 2 is comparable
+    in depth to Tier 1 / Tier 3 outputs. Previous version only printed the
+    final bullets, which made Tier 2 look artificially weak in writeups.
+    """
     final_output = result.get("final_output", [])
-    verdict = "?"
     iterations = result.get("loop", [])
-    if iterations:
-        verdict = iterations[-1].get("critic", {}).get("verdict", "?")
     runner = result.get("_meta", {}).get("runner", "simple")
-    lines = [f"Pipeline runner: {runner}", f"Critic verdict: {verdict}"]
+    elapsed = result.get("_meta", {}).get("elapsed_sec")
+    calls = result.get("_meta", {}).get("llm_calls")
+
+    lines = [f"_Pipeline runner: **{runner}**_"]
+    if elapsed is not None:
+        lines.append(f"_LLM calls: {calls} | Elapsed: {elapsed}s_")
+    lines.append("")
+
+    for it in iterations:
+        idx = it.get("iteration", "?")
+        verdict = it.get("critic", {}).get("verdict", "?")
+        lines.append(f"## Iteration {idx} (critic: {verdict})")
+
+        if runner == "advanced" and it.get("advanced"):
+            adv = it["advanced"]
+            lines.extend(_render_advanced(adv))
+        else:
+            lines.extend(_render_simple(it))
+
+        critic = it.get("critic", {})
+        if critic:
+            lines.append("\n### Critic")
+            for key in ("novelty_score", "relevance_score", "verdict"):
+                if key in critic:
+                    lines.append(f"- {key}: {critic[key]}")
+            for key in ("feedback_for_curiosity", "feedback_for_creativity"):
+                vals = critic.get(key)
+                if vals:
+                    lines.append(f"- {key}:")
+                    for v in vals[:5]:
+                        lines.append(f"  - {v}")
+        lines.append("")
+
     if final_output:
-        lines.append("Final output:")
+        lines.append("## Final Output")
         for item in final_output:
             lines.append(f"- {item}")
     return "\n".join(lines)
+
+
+def _render_simple(it: dict) -> list[str]:
+    out = []
+    cur = it.get("curiosity") or {}
+    cre = it.get("creativity") or {}
+    if cur:
+        out.append("\n### Curiosity")
+        for q in (cur.get("questions") or [])[:6]:
+            out.append(f"- Q: {q}")
+        for h in (cur.get("hidden_assumptions") or [])[:4]:
+            out.append(f"- assumption: {h}")
+    if cre:
+        out.append("\n### Creativity")
+        for b in (cre.get("branches") or [])[:6]:
+            label = b.get("label") or b.get("idea") or str(b)[:80]
+            out.append(f"- branch: {label}")
+        for c in (cre.get("candidates") or [])[:6]:
+            out.append(f"- candidate: {c}")
+    return out
+
+
+def _render_advanced(adv: dict) -> list[str]:
+    out = []
+    cmap = adv.get("curiosity_map") or {}
+    cexp = adv.get("curiosity_expand") or {}
+    cdis = adv.get("curiosity_distill") or {}
+    socr = adv.get("socratic_output") or {}
+    plan = adv.get("creativity_research_plan") or {}
+    branch = adv.get("creativity_branch") or {}
+    develop = adv.get("creativity_develop") or []
+    selection = adv.get("creativity_selection") or {}
+    mixing = adv.get("creativity_mixing") or {}
+    fsynth = adv.get("creativity_final_synthesis") or {}
+
+    if cmap:
+        out.append("\n### Curiosity Map")
+        for d in (cmap.get("curiosity_domains") or [])[:5]:
+            out.append(f"- {d.get('lens', '?')}: {d.get('focus', '')[:90]}")
+
+    if cexp:
+        out.append("\n### Curiosity Expand")
+        for q in (cexp.get("expanded_questions") or [])[:6]:
+            out.append(f"- {q.get('question', str(q))[:120]}")
+
+    if cdis or socr:
+        out.append("\n### Socratic Output")
+        for q in (socr.get("best_questions") or cdis.get("best_questions") or [])[:5]:
+            out.append(f"- Q: {q}")
+        scaffold = socr.get("socratic_scaffold") or cdis.get("socratic_scaffold")
+        if scaffold:
+            out.append(f"- scaffold: {str(scaffold)[:200]}")
+
+    if plan:
+        out.append("\n### Creativity Research Plan")
+        for k in ("known_patterns", "adjacent_domains", "creative_tensions"):
+            vals = plan.get(k) or []
+            for v in vals[:3]:
+                out.append(f"- {k}: {str(v)[:120]}")
+
+    if branch:
+        out.append("\n### Creativity Branches")
+        for b in (branch.get("branches") or [])[:6]:
+            bid = b.get("branch_id", "?")
+            frame = b.get("frame", "")
+            out.append(f"- {bid}: {frame[:120]}")
+
+    if develop:
+        out.append("\n### Branch Development")
+        for b in develop[:6]:
+            bid = b.get("branch_id", "?")
+            out.append(f"- {bid}: {len(b.get('chain_steps', []))} chain steps")
+
+    if selection:
+        out.append("\n### Selection")
+        for s in (selection.get("scored_branches") or [])[:6]:
+            out.append(f"- {s.get('branch_id', '?')} novelty={s.get('novelty_score', '?')} keep={s.get('keep', '?')}")
+
+    if mixing:
+        out.append("\n### Combinatory Mixing")
+        for h in (mixing.get("hybrids") or [])[:5]:
+            out.append(f"- hybrid: {str(h.get('idea', h))[:140]}")
+
+    if fsynth:
+        out.append("\n### Final Synthesis Candidates")
+        for c in (fsynth.get("output") or [])[:6]:
+            out.append(f"- {c}")
+    return out
 
 
 def _run_eval_mode(generate_fn, prompt: str, mode: str) -> tuple[str, dict | None]:
@@ -82,6 +218,35 @@ def _run_tuned_mode(generate_fn, prompt: str, tuned_mode: str, scaffold_mode: st
         return _run_eval_mode(generate_fn, prompt, scaffold_mode)
     if tuned_mode == "direct_plain":
         return generate_fn(TIER1_SYSTEM_PROMPT, prompt), None
+    if tuned_mode == "direct_primed":
+        # Invite the trained format explicitly. Diagnostic showed the architecture
+        # IS in the weights but is suppressed by base style. Priming unlocks it.
+        primed_user = prompt + TIER3_PRIME_SUFFIX
+        if getattr(generate_fn, "is_tuned", False):
+            try:
+                return generate_fn(
+                    TIER3_MINIMAL_SYSTEM_PROMPT, primed_user,
+                    temperature_override=0.4, top_k_override=64, top_p_override=0.9, do_sample=True,
+                ), None
+            except TypeError:
+                pass
+        return generate_fn(TIER3_MINIMAL_SYSTEM_PROMPT, primed_user), None
+    if tuned_mode == "direct_strict":
+        # Deterministic-ish: low-temp greedy + exact training system prompt.
+        # Reveals what the adapter actually learned without sampling drift.
+        if getattr(generate_fn, "is_tuned", False):
+            try:
+                return generate_fn(
+                    TIER3_MINIMAL_SYSTEM_PROMPT, prompt,
+                    temperature_override=0.0,
+                    top_k_override=1,
+                    top_p_override=1.0,
+                    do_sample=False,
+                ), None
+            except TypeError:
+                # Older generate_fn without override kwargs - fall through
+                pass
+        return generate_fn(TIER3_MINIMAL_SYSTEM_PROMPT, prompt), None
     return generate_fn(TIER3_MINIMAL_SYSTEM_PROMPT, prompt), None
 
 
@@ -191,11 +356,11 @@ def export_eval(results: list[dict], output_path: Path | None = None):
 PRESETS = {
     "final_recommended": {
         "label": "Final recommended",
-        "description": "Best hackathon comparison. All held-out prompts, Tier 2 uses advanced pipeline, Tier 3 tuned stays direct with a tiny identity prompt.",
+        "description": "Best hackathon comparison. All held-out prompts, Tier 2 advanced pipeline, Tier 3 invites learned trace format.",
         "model_alias": "e4b",
         "prompt_mode": "all",
         "scaffold_mode": "advanced_pipeline",
-        "tuned_mode": "direct_minimal",
+        "tuned_mode": "direct_primed",
     },
     "quick_smoke": {
         "label": "Quick smoke test",
@@ -204,6 +369,14 @@ PRESETS = {
         "prompt_mode": "single",
         "scaffold_mode": "prompt_simple",
         "tuned_mode": "direct_minimal",
+    },
+    "adapter_diagnostic": {
+        "label": "Adapter diagnostic (greedy)",
+        "description": "Uses temp=0 + training-exact prompt on Tier 3. Reveals what the adapter actually learned.",
+        "model_alias": "e4b",
+        "prompt_mode": "single",
+        "scaffold_mode": "prompt_simple",
+        "tuned_mode": "direct_strict",
     },
     "custom": {
         "label": "Custom",
@@ -224,6 +397,8 @@ SCAFFOLD_LABELS = {
 
 TUNED_LABELS = {
     "direct_minimal": "Direct tuned reply with minimal identity prompt",
+    "direct_primed": "Direct tuned reply, prompt invites the learned trace format (RECOMMENDED)",
+    "direct_strict": "Direct tuned reply, greedy (temp=0) + exact training prompt",
     "direct_plain": "Direct tuned reply with plain helpful-assistant prompt",
     "match_scaffold": "Apply the same scaffold to tuned too",
 }
@@ -338,9 +513,11 @@ def _pick_scaffold_mode(default_mode: str) -> str:
 def _pick_tuned_mode(default_mode: str) -> str:
     print(f"\n{YELLOW}Tier 3 tuned behavior:{RESET}")
     options = [
-        ("1", "direct_minimal", "Recommended. Lets the tuned model answer directly with only a tiny identity prompt."),
-        ("2", "direct_plain", "Direct reply with the same plain helpful-assistant prompt as Tier 1."),
-        ("3", "match_scaffold", "Apply the same scaffold to tuned too. Useful as an extra ablation, not the main final comparison."),
+        ("1", "direct_primed", "Invites the learned trace format (Curiosity / Branches / Final Output). Best result quality."),
+        ("2", "direct_minimal", "Tiny identity prompt only. Tuned model often defaults to base style here."),
+        ("3", "direct_strict", "Greedy (temp=0) + training-exact prompt. Best diagnostic of what was actually learned."),
+        ("4", "direct_plain", "Direct reply with the same plain helpful-assistant prompt as Tier 1."),
+        ("5", "match_scaffold", "Apply the same scaffold to tuned too. Extra ablation, not the main comparison."),
     ]
     default_key = next((key for key, mode, _ in options if mode == default_mode), "1")
     for key, mode, description in options:

@@ -130,7 +130,15 @@ def load_finetuned_gemma4(
     )
     model.eval()
 
-    def generate_fn(system_prompt: str, user_prompt: str) -> str:
+    def generate_fn(
+        system_prompt: str,
+        user_prompt: str,
+        max_new_tokens_override: Optional[int] = None,
+        temperature_override: Optional[float] = None,
+        top_p_override: Optional[float] = None,
+        top_k_override: Optional[int] = None,
+        do_sample: Optional[bool] = None,
+    ) -> str:
         messages = [
             {"role": "system", "content": system_prompt or system},
             {"role": "user", "content": user_prompt},
@@ -143,15 +151,21 @@ def load_finetuned_gemma4(
         )
         inputs = processor(text=text, return_tensors="pt").to(model.device)
         input_len = inputs["input_ids"].shape[-1]
+
+        # Per-call overrides for deterministic / strict eval modes
+        eff_temp = temperature if temperature_override is None else temperature_override
+        eff_top_p = top_p if top_p_override is None else top_p_override
+        eff_top_k = top_k if top_k_override is None else top_k_override
+        eff_max_tokens = max_new_tokens if max_new_tokens_override is None else max_new_tokens_override
+        # Greedy when temp tiny / top_k=1
+        eff_do_sample = do_sample if do_sample is not None else (eff_temp > 0.05 and eff_top_k > 1)
+
+        gen_kwargs = {"max_new_tokens": eff_max_tokens, "do_sample": eff_do_sample}
+        if eff_do_sample:
+            gen_kwargs.update({"temperature": eff_temp, "top_p": eff_top_p, "top_k": eff_top_k})
+
         with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                top_k=top_k,
-                do_sample=True,
-            )
+            outputs = model.generate(**inputs, **gen_kwargs)
         raw_response = processor.decode(outputs[0][input_len:], skip_special_tokens=False)
         try:
             parsed = processor.parse_response(raw_response)
@@ -163,6 +177,7 @@ def load_finetuned_gemma4(
 
     generate_fn.model_id = model_id
     generate_fn.alias = f"finetuned:{Path(adapter_path).name}"
+    generate_fn.is_tuned = True
     return generate_fn
 
 
