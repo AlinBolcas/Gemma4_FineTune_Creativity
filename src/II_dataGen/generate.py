@@ -169,6 +169,77 @@ def _summarize_jobs(jobs: list[dict]) -> list[str]:
     return [f"{key}={counts[key]}" for key in sorted(counts)]
 
 
+def _zero_usage() -> dict:
+    return {
+        "requests": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": 0.0,
+    }
+
+
+def _openai_usage_snapshot(owner) -> dict:
+    if owner and hasattr(owner, "get_usage_snapshot"):
+        return owner.get_usage_snapshot()
+    return _zero_usage()
+
+
+def _usage_delta(before: dict, after: dict) -> dict:
+    result = {}
+    for key, default in _zero_usage().items():
+        result[key] = after.get(key, default) - before.get(key, default)
+    return result
+
+
+def _merge_usage(items: list[dict]) -> dict:
+    total = _zero_usage()
+    for item in items:
+        if not item:
+            continue
+        for key in total:
+            total[key] += item.get(key, 0)
+    return total
+
+
+def _format_cost(value: float | None) -> str:
+    if value is None:
+        return "unknown"
+    return f"${value:.4f}" if value < 0.01 else f"${value:.2f}"
+
+
+def _format_usage_line(usage: dict) -> str:
+    return (
+        f"cost={_format_cost(usage.get('cost_usd', 0.0))}  "
+        f"requests={int(usage.get('requests', 0))}  "
+        f"in={int(usage.get('input_tokens', 0)):,}  "
+        f"cached={int(usage.get('cached_input_tokens', 0)):,}  "
+        f"out={int(usage.get('output_tokens', 0)):,}"
+    )
+
+
+def _estimate_openai_run_cost(model_id: str, jobs: list[dict], pipeline_mode: str) -> dict:
+    from src.IV_inference.openai_integration import estimate_cost_usd
+
+    # Conservative starter estimates; final reporting uses real API token usage.
+    if pipeline_mode == "advanced":
+        calls_per_job, input_per_call, output_per_call = 11, 1400, 700
+    else:
+        calls_per_job, input_per_call, output_per_call = 3, 900, 550
+    calls = len(jobs) * calls_per_job
+    input_tokens = calls * input_per_call
+    output_tokens = calls * output_per_call
+    cost = estimate_cost_usd(model_id, input_tokens=input_tokens, output_tokens=output_tokens)
+    return {
+        "jobs": len(jobs),
+        "calls": calls,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cost_usd": cost,
+    }
+
+
 def _start_progress_monitor(state: dict, stop_event: threading.Event, interval_sec: int = 15):
     def monitor():
         while not stop_event.wait(interval_sec):
@@ -242,9 +313,11 @@ def generate_dataset(
         if owner and hasattr(owner, "clear"):
             owner.clear()
 
+        usage_before = _openai_usage_snapshot(owner)
         start = time.time()
         example = run_pipeline(task=task, generate_fn=generate_fn, domain=label, verbose=verbose)
         elapsed = round(time.time() - start, 1)
+        usage = _usage_delta(usage_before, _openai_usage_snapshot(owner))
 
         errors = validate_pipeline(example)
         if errors and verbose:
@@ -258,6 +331,7 @@ def generate_dataset(
             "elapsed_sec": elapsed,
             "timestamp": datetime.now().isoformat(),
             "validation_errors": errors,
+            "openai_usage": usage if usage.get("requests") else None,
         }
         results.append(example)
 
@@ -267,6 +341,8 @@ def generate_dataset(
             _rewrite_markdown_from_jsonl(output_path)
             if verbose:
                 print(f"  {GREEN}Saved example immediately -> {output_path.name}{RESET}")
+        if verbose and usage.get("requests"):
+            print(f"  {CYAN}[OpenAI cost]{RESET} {_format_usage_line(usage)}")
 
     return results
 
@@ -334,6 +410,7 @@ def _run_generation_job(
     if on_start:
         on_start(job)
 
+    usage_before = _openai_usage_snapshot(owner)
     start = time.time()
     try:
         example = run_pipeline(
@@ -343,6 +420,7 @@ def _run_generation_job(
             verbose=False,
         )
         elapsed = round(time.time() - start, 1)
+        usage = _usage_delta(usage_before, _openai_usage_snapshot(owner))
         errors = validate_pipeline(example)
 
         existing_meta = example.get("_meta", {})
@@ -354,10 +432,11 @@ def _run_generation_job(
             "timestamp": datetime.now().isoformat(),
             "validation_errors": errors,
             "parallel_seq": job["seq"],
+            "openai_usage": usage if usage.get("requests") else None,
         }
         if on_finish:
             on_finish(job, elapsed, False)
-        return {"job": job, "example": example, "elapsed": elapsed, "errors": errors}
+        return {"job": job, "example": example, "elapsed": elapsed, "errors": errors, "usage": usage}
     except Exception:
         elapsed = round(time.time() - start, 1)
         if on_finish:
@@ -400,6 +479,12 @@ def generate_many(
                 pipeline_mode=pipeline_mode,
             )
             all_results.extend(results)
+        usage_total = _merge_usage([
+            r.get("_meta", {}).get("openai_usage") for r in all_results
+            if r.get("_meta", {}).get("openai_usage")
+        ])
+        if verbose and usage_total.get("requests"):
+            print(f"\n{GREEN}OpenAI run total:{RESET} {_format_usage_line(usage_total)}")
         return all_results
 
     if worker_factory is None:
@@ -438,6 +523,7 @@ def generate_many(
     existing_total = len(_read_jsonl(output_path)) if output_path and output_path.exists() else 0
     get_thread_generate_fn = _make_thread_local_generate_fn(worker_factory)
     all_results = []
+    usage_results = []
     saved_count = 0
     state = {
         "lock": threading.Lock(),
@@ -508,7 +594,10 @@ def generate_many(
                 example = payload["example"]
                 errors = payload["errors"]
                 elapsed = payload["elapsed"]
+                usage = payload.get("usage") or _zero_usage()
                 all_results.append(example)
+                if usage.get("requests"):
+                    usage_results.append(usage)
 
                 if output_path:
                     if parts_dir:
@@ -533,6 +622,8 @@ def generate_many(
                     )
                     print(f"  {job['task'][:100]}")
                     print(f"  elapsed: {elapsed}s  active={active} failed={failed_count}")
+                    if usage.get("requests"):
+                        print(f"  {CYAN}[OpenAI cost]{RESET} {_format_usage_line(usage)}")
                     if errors:
                         print(f"  {YELLOW}[QA] Validation: {errors}{RESET}")
                     if output_path:
@@ -543,6 +634,9 @@ def generate_many(
         if monitor_thread:
             monitor_thread.join(timeout=1)
 
+    if verbose and usage_results:
+        print(f"\n{GREEN}OpenAI run total:{RESET} {_format_usage_line(_merge_usage(usage_results))}")
+
     return all_results
 
 # ---------------------------------------------------------------------------
@@ -552,11 +646,43 @@ def generate_many(
 def _pick_backend_and_model():
     from src.IV_inference.gemma4_integration import MODELS as HF_MODELS
     from src.IV_inference.ollama_integration import MODELS as OLLAMA_MODELS
+    from src.IV_inference.openai_integration import (
+        MODELS_DOCS_URL,
+        MODEL_PICKER_DISPLAY_CAP,
+        PRICING_DOCS_URL,
+        fetch_text_generation_models,
+        get_default_model_id,
+        normalize_priced_model_id,
+        price_brief,
+    )
 
     print(f"\n{YELLOW}Backend:{RESET}")
-    print("  [1] Hugging Face transformers")
+    print("  [1] OpenAI API")
     print("  [2] Ollama local")
+    print("  [3] Hugging Face transformers")
     backend = input("\n  Choice [1]: ").strip() or "1"
+
+    if backend == "1":
+        rows = fetch_text_generation_models()
+        priced_rows = [row for row in rows if normalize_priced_model_id(row["id"])]
+        shown = (priced_rows or rows)[:MODEL_PICKER_DISPLAY_CAP]
+        default_id = shown[0]["id"] if shown else get_default_model_id()
+        print(f"\n{YELLOW}OpenAI model:{RESET} {GREY}(5.5/5.4 priced flagship models for your key){RESET}")
+        print(f"  {GREY}Models: {MODELS_DOCS_URL}{RESET}")
+        print(f"  {GREY}Pricing: {PRICING_DOCS_URL}{RESET}")
+        for i, row in enumerate(shown, 1):
+            desc = price_brief(row["id"]) if normalize_priced_model_id(row["id"]) else (row.get("description") or "")[:44]
+            default = f" {GREY}<- default{RESET}" if i == 1 else ""
+            print(f"  [{i}] {row['id']:<26}  {desc}{default}")
+        if priced_rows and len(rows) > len(priced_rows):
+            print(f"  {GREY}Showing only priced 5.5/5.4 choices. Use [c] to type another live id.{RESET}")
+        print("  [c] custom model id")
+        raw = input(f"\n  Choice [1]: ").strip().lower() or "1"
+        if raw == "c":
+            return "openai", input("  Custom OpenAI model id: ").strip() or default_id
+        idx = int(raw) - 1 if raw.isdigit() and 1 <= int(raw) <= len(shown) else 0
+        model_alias = shown[idx]["id"] if shown else default_id
+        return "openai", model_alias
 
     if backend == "2":
         print(f"\n{YELLOW}Ollama model:{RESET}")
@@ -716,9 +842,18 @@ def _pick_output_path(domain_keys: list[str], pipeline_mode: str) -> tuple[Path,
 
 
 def _pick_parallel_workers(backend: str, pipeline_mode: str, model_alias: str) -> int:
-    if backend != "ollama":
+    if backend == "hf":
         print(f"\n{GREY}Parallel workers are disabled for Hugging Face on local Mac. One in-process model is safer.{RESET}")
         return 1
+
+    if backend == "openai":
+        default_workers = 4 if pipeline_mode == "advanced" else 8
+        print(f"\n{YELLOW}Parallel worker threads (OpenAI API):{RESET}")
+        print(f"  {GREY}Use 1 for serial mode. Higher is faster but may hit rate limits.{RESET}")
+        print(f"  {GREY}Recommended: 4 for advanced, 8 for simple. Reduce if you see rate-limit errors.{RESET}")
+        raw = input(f"\n  Workers [{default_workers}]: ").strip() or str(default_workers)
+        workers = int(raw) if raw.isdigit() else default_workers
+        return max(1, workers)
 
     cpu_count = os.cpu_count() or 4
     if pipeline_mode == "advanced":
@@ -748,6 +883,7 @@ def _pick_parallel_workers(backend: str, pipeline_mode: str, model_alias: str) -
 def _tui():
     from src.IV_inference.gemma4_integration import load_gemma4
     from src.IV_inference.ollama_integration import load_ollama_gemma4
+    from src.IV_inference.openai_integration import load_openai_generator, resolve_model_id
 
     ensure_data_dirs()
 
@@ -785,9 +921,36 @@ def _tui():
     print(f"  {GREEN}Mode:{RESET} {'resume' if resume else 'new'}")
 
     backend, model_alias = _pick_backend_and_model()
+    if backend == "openai":
+        planned_jobs = _build_generation_jobs(
+            domain_keys=domain_keys,
+            limit_per_domain=limit_per_domain,
+            output_path=output_path,
+            resume=resume,
+            verbose=False,
+            pipeline_mode=pipeline_mode,
+        )
+        resolved_model_id = resolve_model_id(model_alias)
+        projection = _estimate_openai_run_cost(resolved_model_id, planned_jobs, pipeline_mode)
+        print(f"\n{YELLOW}OpenAI cost projection before run:{RESET}")
+        print(f"  {GREY}Model:{RESET} {resolved_model_id}")
+        print(f"  {GREY}Pending jobs:{RESET} {projection['jobs']}  approx calls={projection['calls']}")
+        print(
+            f"  {GREY}Estimated tokens:{RESET} "
+            f"in={projection['input_tokens']:,}  out={projection['output_tokens']:,}"
+        )
+        print(f"  {BOLD}Estimated cost:{RESET} {_format_cost(projection['cost_usd'])}")
+        print(f"  {GREY}Actual final cost will use OpenAI response.usage tokens.{RESET}")
+        if input("\n  Continue with this OpenAI run? [Y/n]: ").strip().lower() in ("n", "no"):
+            print(f"\n{YELLOW}Cancelled before any generation call.{RESET}")
+            return
+
     if backend == "ollama":
         generate_fn = load_ollama_gemma4(model=model_alias, thinking=False, use_memory=False)
         worker_factory = lambda: load_ollama_gemma4(model=model_alias, thinking=False, use_memory=False)
+    elif backend == "openai":
+        generate_fn = load_openai_generator(model=model_alias, thinking=False, use_memory=False)
+        worker_factory = lambda: load_openai_generator(model=model_alias, thinking=False, use_memory=False)
     else:
         generate_fn = load_gemma4(model=model_alias, thinking=False, use_memory=False)
         worker_factory = None
@@ -801,6 +964,11 @@ def _tui():
             print(f"\n{GREEN}Using serial mode for advanced generation.{RESET} Best for stability and more predictable progress.")
         elif pipeline_mode == "simple" and parallel_workers == 1:
             print(f"\n{GREEN}Using serial mode.{RESET} Slower overall, but easiest to reason about.")
+    elif backend == "openai":
+        if parallel_workers > 8:
+            print(f"\n{YELLOW}Warning:{RESET} {parallel_workers} OpenAI workers may hit rate limits. Resume mode will protect saved progress.")
+        else:
+            print(f"\n{GREEN}Using OpenAI parallel mode:{RESET} {parallel_workers} worker(s).")
 
     try:
         all_results = generate_many(
@@ -821,6 +989,12 @@ def _tui():
     current_total = len(_read_jsonl(output_path))
     valid = sum(1 for r in _read_jsonl(output_path) if not r.get("_meta", {}).get("validation_errors"))
     print(f"\n  {GREEN}Done:{RESET} {current_total} total saved, {valid} fully valid")
+    usage_total = _merge_usage([
+        r.get("_meta", {}).get("openai_usage") for r in all_results
+        if r.get("_meta", {}).get("openai_usage")
+    ])
+    if usage_total.get("requests"):
+        print(f"  {GREEN}Actual OpenAI cost this run:{RESET} {_format_usage_line(usage_total)}")
 
     dataset_for_formatting = output_path
     print(f"\n{YELLOW}Augment this raw dataset with Gemma 4 before SFT formatting? [y/N]{RESET}")
