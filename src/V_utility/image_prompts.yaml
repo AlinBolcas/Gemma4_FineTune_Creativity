@@ -1,0 +1,235 @@
+# ============================================================
+# Gemma 4 Creative Reasoning Fine-Tune — Image Generation Prompts
+# ============================================================
+# Each entry generates one image via the ArX API (gpt-image-2).
+# The ARVOLVE aesthetic preset is appended automatically by the script.
+# Prompts follow ArX standard: subject → key features → materials → lighting → quality.
+#
+# Fields:
+#   id           — output filename stem
+#   category     — grouping label (= subfolder)
+#   aspect_ratio — "1:1" | "16:9" | "4:3" | "3:2" | "2:3"
+#   prompt       — clean concept prompt (Arvolve suffix added by script)
+# ============================================================
+
+images:
+
+  # ── COVERS ─────────────────────────────────────────────────
+
+  - id: cover_hero
+    category: covers
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic sculptural artifact suspended in dark void, two intertwining helical forms
+      in cool blue and warm bronze metallic patina spiral toward a central luminous orb,
+      surfaces fractured to reveal hidden motion vectors, captured mid-emergence
+
+  - id: cover_square
+    category: covers
+    aspect_ratio: "1:1"
+    prompt: >
+      Hyperrealistic monolithic sentinel sculpture, two arched mineral-stone planes rising
+      to enclose a single glowing blue orb at center, sculptural symbol against deep void,
+      bronze patina edges with cool blue core illumination
+
+  - id: cover_banner
+    category: covers
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic algorithmic seed sprouting branching geometric structures across the frame,
+      frozen mid-growth, surfaces of fractured bronze and brushed steel revealing
+      computational toolmarks and digital artifacting
+
+  # ── CONCEPTS ───────────────────────────────────────────────
+
+  - id: concept_curiosity
+    category: concepts
+    aspect_ratio: "1:1"
+    prompt: >
+      Hyperrealistic radial sculpture, central seed node from which dozens of slender
+      question-mark spires extend outward in all directions like a dandelion mid-dispersal,
+      frozen explosion of inquiry, mineral and bronze materials
+
+  - id: concept_creativity
+    category: concepts
+    aspect_ratio: "1:1"
+    prompt: >
+      Hyperrealistic crystalline tree sculpture rooted at the base, multiple structurally
+      distinct branches rising upward and crossing at the canopy where they fuse into
+      hybrid forms, captured at peak emergence, bronze and blue-steel
+
+  - id: concept_combinatorial_mix
+    category: concepts
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic sculptural arrangement, five distinct ribbons of contrasting materials
+      bronze copper basalt blue-steel and pale stone braided through a central vortex
+      and emerging on the opposite side as a single fused alloy form
+
+  - id: concept_dna_recombination
+    category: concepts
+    aspect_ratio: "3:2"
+    prompt: >
+      Hyperrealistic sculpture of two intertwining double-helical strands of contrasting
+      metallic materials meeting at center and fusing, a third unprecedented strand
+      emerging upward from the union point in luminous alloy
+
+  - id: concept_latent_space
+    category: concepts
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic vast suspended landscape of luminous bronze and blue nodes arranged
+      in semantic clusters across deep void, a single bright probe trail carving an
+      exploratory path through the dark space between them
+
+  - id: concept_temperature
+    category: concepts
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic horizontal sculptural spectrum, rigid identical crystalline forms
+      on the left transitioning through blooming varied geometries in the center to
+      fragmenting chaotic shards on the right, controlled emergence of diversity
+
+  - id: concept_winner_takes_all
+    category: concepts
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic massive industrial lock mechanism in deep mineral tones, a single
+      elegant key shaped like a branching cognitive tree inserted at center, captured
+      at the precise moment of unlock with cool blue light escaping from within
+
+  # ── ABSTRACT ───────────────────────────────────────────────
+
+  - id: abstract_creative_mind
+    category: abstract
+    aspect_ratio: "1:1"
+    prompt: >
+      Hyperrealistic sculptural cortex form suspended in dark space, part neural network
+      and part architectural coral reef, surfaces of fractured bronze and stone lit
+      from within by a single bright pulse at the core
+
+  - id: abstract_emergence
+    category: abstract
+    aspect_ratio: "3:2"
+    prompt: >
+      Hyperrealistic single luminous metallic filament rising and unfurling like a fern
+      frond from a dense tangled substrate of darker stone material, branching outward
+      into bright spark-points at each new fork
+
+  - id: abstract_socratic_engine
+    category: abstract
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic central glowing orb in fractured bronze and blue radiating
+      question-shaped wave forms outward across dark space, smaller distant orbs
+      returning brighter signals back toward the center
+
+  # ── ARCHITECTURE METAPHORS ─────────────────────────────────
+
+  - id: arch_pipeline
+    category: architecture
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic sculptural composition, two converging rivers of liquid mercury and
+      molten bronze flowing through a series of crystalline filtering gates and combining
+      at each junction, captured as a single suspended artifact
+
+  - id: arch_self_distillation
+    category: architecture
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic closed-loop crystalline coil sculpture, the output of one cycle
+      visibly feeding back into the input through a curved channel, depicted as a
+      recursive cognitive engine in bronze and steel against deep void
+
+  # ── INFORMATIONAL (project-specific sculptural infographics) ───────────────
+
+  - id: info_pipeline_stages
+    category: info
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic sequence of eleven distinct sculptural waypoint forms arranged
+      in a flowing serpentine path from left to right, early waypoints angular and
+      questioning, middle waypoints branching outward, late waypoints converging
+      inward, connected by a slender luminous thread, bronze and blue-steel materials
+
+  - id: info_three_tiers
+    category: info
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic three vertical sculptural columns of equal height side by side
+      against deep void, leftmost a smooth monolithic obelisk, middle a multi-branched
+      crystalline tree, rightmost a hybrid form blending monolithic stability with
+      branched complexity, comparison study in matching materials
+
+  - id: info_eight_domains
+    category: info
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic radial arrangement of eight distinct sculptural medallions
+      surrounding a central nexus node, each medallion rendered in a different
+      material treatment of bronze basalt marble mercury copper steel obsidian jade,
+      diversity within a unified system
+
+  - id: info_loss_descent
+    category: info
+    aspect_ratio: "3:2"
+    prompt: >
+      Hyperrealistic sculptural interpretation of a steep descending curve,
+      a sweeping channel carved into a vertical slab of bronze and dark stone,
+      starting high and steep on the left then gradually flattening toward the right,
+      faint cool blue luminescence tracing the channel
+
+  - id: info_behavioral_shift
+    category: info
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic pair of sculptural forms side by side against dark void,
+      left form a smooth static monolith of weathered stone, right form nearly
+      identical but subtly articulated with fine fracture lines and a faint
+      cool blue inner glow, depicting subtle but real transformation
+
+  - id: info_data_flow
+    category: info
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic industrial sculptural pipeline, raw stone fragments entering
+      on the left, passing through a series of crystalline filtering chambers
+      with bronze housings, emerging on the right as refined luminous artifacts,
+      depicting transformation through processing stages
+
+  - id: info_critic_loop
+    category: info
+    aspect_ratio: "1:1"
+    prompt: >
+      Hyperrealistic circular sculptural mechanism, a central pass-through gate
+      with two arcing feedback channels looping back to the entry point,
+      captured as a contained recursive evaluation engine in bronze with cool
+      blue energy traces flowing through the loop
+
+  - id: info_lora_adapter
+    category: info
+    aspect_ratio: "1:1"
+    prompt: >
+      Hyperrealistic massive cylindrical sculptural pillar of dark weathered stone
+      with a small precisely-machined bronze ring clamped around its midpoint,
+      the ring detailed and glowing faintly cool blue while the pillar remains
+      static and ancient, parameter-efficient adaptation principle
+
+  - id: info_priming_unlock
+    category: info
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic paired sculptural states of the same form, left state dormant
+      and sealed with muted patina, right state activated by a small key-shaped
+      intrusion at its base causing the entire form to crystallize into intricate
+      structured detail with cool blue illumination revealing hidden geometry
+
+  - id: info_critique_balance
+    category: info
+    aspect_ratio: "16:9"
+    prompt: >
+      Hyperrealistic sculptural balance scale with two pans against dark void,
+      left pan holding a perfectly polished crystalline orb with cool blue core,
+      right pan holding a fractured incomplete form in muted bronze, captured
+      as a precision measuring artifact for evaluation

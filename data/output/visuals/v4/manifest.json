@@ -1,0 +1,62 @@
+[
+  {
+    "id": "hero_branching_mind",
+    "status": "ok"
+  },
+  {
+    "id": "hero_dual_streams",
+    "status": "ok"
+  },
+  {
+    "id": "hero_creative_genesis",
+    "status": "ok"
+  },
+  {
+    "id": "hero_thought_kernel",
+    "status": "ok"
+  },
+  {
+    "id": "diag_pipeline_flow",
+    "status": "ok"
+  },
+  {
+    "id": "diag_three_tiers",
+    "status": "ok"
+  },
+  {
+    "id": "diag_self_distillation",
+    "status": "ok"
+  },
+  {
+    "id": "diag_temp_spectrum",
+    "status": "ok"
+  },
+  {
+    "id": "diag_combinatorial_mix",
+    "status": "ok"
+  },
+  {
+    "id": "diag_lora_adapter",
+    "status": "ok"
+  },
+  {
+    "id": "diag_eight_domains",
+    "status": "ok"
+  },
+  {
+    "id": "diag_data_pipeline",
+    "status": "ok"
+  },
+  {
+    "id": "diag_critic_loop",
+    "status": "ok"
+  },
+  {
+    "id": "diag_behavioral_shift",
+    "status": "ok"
+  },
+  {
+    "id": "diag_priming_unlock",
+    "status": "ok"
+  }
+]

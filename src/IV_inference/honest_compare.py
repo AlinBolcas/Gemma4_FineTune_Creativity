@@ -39,8 +39,8 @@ DEFAULT_PROMPTS = [
 
 TRACE_MARKERS = ["## Iteration", "### Curiosity", "Branch seeds:", "### Creativity", "## Final Output"]
 
-DEFAULT_MAX_TOKENS = 600
-DEFAULT_TEMP = 0.7
+DEFAULT_MAX_TOKENS = 4096
+DEFAULT_TEMP = 0.5
 DEFAULT_TOP_P = 0.95
 DEFAULT_TOP_K = 64
 

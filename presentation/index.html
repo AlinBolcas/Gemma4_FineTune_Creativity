@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gemma 4 Creative Reasoning Fine-Tune</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- chrome -->
+  <div id="progress"></div>
+  <img id="logo" src="assets/arvolve_logo.png" alt="">
+  <div id="counter"><span id="curr">1</span><span class="sep">/</span><span id="total">15</span></div>
+  <div id="hint">← → space · F fullscreen</div>
+
+  <main id="deck">
+
+    <!-- 1 · TITLE -->
+    <section class="slide title">
+      <div class="eyebrow">Gemma 4 Good Hackathon · Education Track</div>
+      <h1 class="headline-xl">
+        <span class="thin">Gemma 4</span><br>
+        <span>Creative Reasoning</span><br>
+        <span class="accent">Fine-Tune</span>
+      </h1>
+      <div class="sub">A pipeline that maps how humans think creatively, then fine-tunes Gemma 4 on its own reasoning traces to make creativity native to the weights.</div>
+      <div class="byline">Alin Bolcas · Arvolve · 2026</div>
+    </section>
+
+    <!-- 2 · THESIS -->
+    <section class="slide">
+      <div class="eyebrow">The problem</div>
+      <h2 class="headline-l">
+        Creativity is where current LLMs<br>
+        are <em>weakest</em>.
+      </h2>
+      <div class="body" style="margin-top:36px;">
+        Models output what their training data and stochastic sampling allow.
+        For five years of testing, none have produced a truly original idea —
+        not even for something as small as naming.<br><br>
+        The hypothesis behind this project: if we reverse-engineer the cognitive process
+        behind human creativity, capture it as structured traces, and fine-tune Gemma 4 on them —
+        the model should approach problems more creatively even without the runtime scaffolding.
+      </div>
+    </section>
+
+    <!-- 3 · TWO STREAMS -->
+    <section class="slide split">
+      <div class="left">
+        <div class="eyebrow">Architecture</div>
+        <h2 class="headline-l">Two streams.<br>One reasoning loop.</h2>
+        <div class="body">
+          Inspired by introspection on how humans arrive at original ideas: first a <b>curiosity</b> phase that maps the unknown and questions the framing, then a <b>creativity</b> phase that branches, prunes, and recombines.<br><br>
+          A <b>critic</b> closes the loop. Eleven stages total, each a separate LLM call with its own schema and validation.
+        </div>
+      </div>
+      <div class="right">
+        <img src="../data/output/visuals/v4/diag_pipeline_flow.png" alt="" class="art crisp">
+      </div>
+    </section>
+
+    <!-- 4 · CURIOSITY -->
+    <section class="slide">
+      <div class="eyebrow">Stream 1 · Curiosity</div>
+      <h2 class="headline-l">A Socratic engine.<br>It never answers.</h2>
+      <ol class="stages">
+        <li><b>Map</b> — five lenses on the problem: assumption, opposite, expert, frontier, cross-domain</li>
+        <li><b>Expand</b> — branch into questions per domain, ranked by non-obviousness</li>
+        <li><b>Distill</b> — leverage-score the questions, keep the highest-impact set</li>
+        <li><b>Socratic output</b> — structured steering signal that frames everything downstream</li>
+      </ol>
+    </section>
+
+    <!-- 5 · CREATIVITY -->
+    <section class="slide">
+      <div class="eyebrow">Stream 2 · Creativity</div>
+      <h2 class="headline-l">Branch. Prune.<br>Recombine.</h2>
+      <ol class="stages" start="5">
+        <li><b>Research plan</b> — frame the search space using the curiosity signal</li>
+        <li><b>Branch</b> — N structurally distinct directions, not just rewordings</li>
+        <li><b>Develop</b> — exhaust each branch independently before comparison</li>
+        <li><b>Select &amp; prune</b> — natural selection by novelty and combinability</li>
+        <li><b>Combinatory mix</b> — cross-pollinate survivors into hybrids unreachable from any single branch</li>
+        <li><b>Synthesize</b> — final candidates with provenance back to source branches</li>
+      </ol>
+      <div class="caption muted" style="margin-top:36px;max-width:720px;">
+        Combinatorial mixing is the heart. Akin to how DNA recombines or how neural signals bridge cortical regions —
+        new ideas emerge from organic recombination, not from any single chain of thought.
+      </div>
+    </section>
+
+    <!-- 6 · CRITIC -->
+    <section class="slide">
+      <div class="eyebrow">Stage 11 · Critic</div>
+      <h2 class="headline-l">Pass — or loop.</h2>
+      <div class="body" style="margin-top:24px;">
+        Every candidate scored on <b>novelty</b> and <b>relevance</b>. Both thresholds at <span class="kpi-inline">≥ 7 / 10</span>.<br><br>
+        On <b>FAIL</b>, the critic sends targeted feedback back to both streams and the full loop runs again.
+        The architecture refines its own output until the critic agrees — or budget runs out.
+      </div>
+    </section>
+
+    <!-- 7 · DATA / SELF-DISTILLATION (honest) -->
+    <section class="slide split reverse">
+      <div class="left">
+        <img src="../data/output/visuals/info/info_data_flow.png" alt="" class="art crisp square">
+      </div>
+      <div class="right">
+        <div class="eyebrow">Training data · honest story</div>
+        <h2 class="headline-l">Self-distillation<br>wasn't enough alone.</h2>
+        <div class="body">
+          The original intent: Gemma 4 generating its own traces, no teacher.
+          <span class="kpi-inline">~300</span> self-distilled examples trained cleanly but produced no measurable shift.<br><br>
+          To reach scale, the same 11-stage pipeline was run with a third-party API model.
+          Final corpus: <span class="kpi-inline">4,771</span> SFT examples (~14k turns) across 8 domains.<br><br>
+          The claim still holds: <em>the architecture is recoverable from Gemma 4 — internalizing it is what needs volume.</em>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · TRAINING RUN + LOSS CHART -->
+    <section class="slide chart-slide">
+      <div class="chart-header">
+        <div class="eyebrow">Training run</div>
+        <h2 class="headline-l">LoRA on a frozen base. Clean descent.</h2>
+        <table class="spec" style="margin-top:8px;">
+          <tr><td>Base</td><td><code>google/gemma-4-E4B-it</code> · 8.07B</td></tr>
+          <tr><td>Adapter</td><td>LoRA · r 16 · α 32 · dropout 0.05 · <span class="accent">73.4M trainable (0.91%)</span></td></tr>
+          <tr><td>Run</td><td>2,148 steps · 2 epochs · 4.4 h · Kaggle T4 (16 GB)</td></tr>
+        </table>
+      </div>
+      <div id="loss-chart"></div>
+    </section>
+
+    <!-- 9 · EVAL SETUP -->
+    <section class="slide split">
+      <div class="left">
+        <div class="eyebrow">Evaluation</div>
+        <h2 class="headline-l">Three tiers,<br>one held-out set.</h2>
+        <ul class="ticks">
+          <li><b>Tier 1</b> — Vanilla Gemma 4. Baseline behavior.</li>
+          <li><b>Tier 2</b> — Vanilla + full 11-stage pipeline at runtime. Does the architecture work at all?</li>
+          <li><b>Tier 3</b> — Fine-tuned adapter, no scaffolding. Did the architecture transfer into the weights?</li>
+        </ul>
+      </div>
+      <div class="right">
+        <img src="../data/output/visuals/v4/diag_three_tiers.png" alt="" class="art crisp">
+      </div>
+    </section>
+
+    <!-- 10 · RESULT (honest) -->
+    <section class="slide split reverse">
+      <div class="left">
+        <img src="../data/output/visuals/v4/diag_behavioral_shift.png" alt="" class="art crisp">
+      </div>
+      <div class="right">
+        <div class="eyebrow">Result · honest</div>
+        <h2 class="headline-l">Soft transfer.<br>Not dominant.</h2>
+        <div class="body">
+          At default sampling, the tuned model doesn't spontaneously emit the verbatim trace format —
+          ~4.7k examples can't outright override trillions of instruction-tuning tokens.<br><br>
+          But the adapter is alive. In side-by-side tests it more often <b>asks clarifying questions first</b>,
+          uses <b>tighter idea-set groupings</b>, and stays <b>more constraint-aware</b> than vanilla.
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 · PRIMING UNLOCK -->
+    <section class="slide split">
+      <div class="left">
+        <div class="eyebrow">The format is in the weights</div>
+        <h2 class="headline-l">A small invitation<br>unlocks it.</h2>
+        <div class="body">
+          Plain prompt → polished markdown, no trace structure.<br>
+          Same prompt + a light format hint → the full hierarchy:
+          <code style="display:block;margin-top:14px;padding:12px 16px;border:1px solid var(--hairline);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--off-white);">## Iteration → ### Curiosity → ### Creativity → ## Final Output</code>
+        </div>
+      </div>
+      <div class="right">
+        <img src="../data/output/visuals/v4/diag_priming_unlock.png" alt="" class="art crisp">
+      </div>
+    </section>
+
+    <!-- 12 · TEMPERATURE -->
+    <section class="slide">
+      <div class="eyebrow center">A practical lever</div>
+      <h2 class="headline-l center">Temperature sweet spot.</h2>
+      <div id="temp-chart"></div>
+      <div class="caption center muted">
+        Below 0.5 collapses to baseline. Above 1.0 becomes noise.
+        <b class="accent">0.6&ndash;0.8</b> expands sampling enough to benefit branch-and-select without breaking coherence.
+      </div>
+    </section>
+
+    <!-- 13 · WHY IT MATTERS -->
+    <section class="slide split reverse">
+      <div class="left">
+        <img src="../data/output/visuals/abstract/abstract_creative_mind.png" alt="" class="art">
+      </div>
+      <div class="right">
+        <div class="eyebrow">Why this matters</div>
+        <h2 class="headline-l">Creativity is the lock<br>to self-improvement.</h2>
+        <div class="body">
+          The moment we crack creativity, everything compounds —
+          genuine novelty, original research, self-improving systems.<br><br>
+          It's the most impactful unsolved problem in LLM development,
+          and it's the difference between a model that recombines what it knows
+          and one that produces something genuinely new.<br><br>
+          Winner-takes-all direction.
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 · CLOSING -->
+    <section class="slide closing">
+      <div class="closing-stack">
+        <div class="closing-line muted">Teach the <em>process</em>.</div>
+        <div class="closing-line">Not just the answer.</div>
+      </div>
+    </section>
+
+    <!-- 15 · END CARD -->
+    <section class="slide end-card">
+      <div class="end-stack">
+        <div class="end-title">Gemma 4 Creative Reasoning Fine-Tune</div>
+        <div class="end-row">
+          <div class="end-cell"><div class="end-label">Track</div><div class="end-value">Education</div></div>
+          <div class="end-cell"><div class="end-label">Author</div><div class="end-value">Alin Bolcas</div></div>
+          <div class="end-cell"><div class="end-label">Repo</div><div class="end-value mono">github.com/AlinBolcas/Gemma4_FineTune_Creativity</div></div>
+        </div>
+        <div class="end-foot">Gemma 4 Good Hackathon · Kaggle × Google DeepMind · 2026</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

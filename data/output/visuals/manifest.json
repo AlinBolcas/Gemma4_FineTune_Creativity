@@ -1,0 +1,137 @@
+[
+  {
+    "id": "cover_square",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/covers/cover_square.png"
+  },
+  {
+    "id": "cover_banner",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/covers/cover_banner.png"
+  },
+  {
+    "id": "cover_hero",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/covers/cover_hero.png"
+  },
+  {
+    "id": "concept_curiosity",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/concepts/concept_curiosity.png"
+  },
+  {
+    "id": "concept_creativity",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/concepts/concept_creativity.png"
+  },
+  {
+    "id": "concept_combinatorial_mix",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/concepts/concept_combinatorial_mix.png"
+  },
+  {
+    "id": "concept_dna_recombination",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/concepts/concept_dna_recombination.png"
+  },
+  {
+    "id": "concept_latent_space",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/concepts/concept_latent_space.png"
+  },
+  {
+    "id": "concept_temperature",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/concepts/concept_temperature.png"
+  },
+  {
+    "id": "concept_winner_takes_all",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/concepts/concept_winner_takes_all.png"
+  },
+  {
+    "id": "abstract_emergence",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/abstract/abstract_emergence.png"
+  },
+  {
+    "id": "abstract_creative_mind",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/abstract/abstract_creative_mind.png"
+  },
+  {
+    "id": "abstract_socratic_engine",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/abstract/abstract_socratic_engine.png"
+  },
+  {
+    "id": "arch_pipeline",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/architecture/arch_pipeline.png"
+  },
+  {
+    "id": "arch_self_distillation",
+    "status": "skipped",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/architecture/arch_self_distillation.png"
+  },
+  {
+    "id": "info_eight_domains",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_eight_domains.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185310020287.png"
+  },
+  {
+    "id": "info_loss_descent",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_loss_descent.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185310044244.png"
+  },
+  {
+    "id": "info_three_tiers",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_three_tiers.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185310037713.png"
+  },
+  {
+    "id": "info_behavioral_shift",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_behavioral_shift.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185310013314.png"
+  },
+  {
+    "id": "info_pipeline_stages",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_pipeline_stages.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185310046324.png"
+  },
+  {
+    "id": "info_lora_adapter",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_lora_adapter.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185408728499.png"
+  },
+  {
+    "id": "info_data_flow",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_data_flow.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185351230663.png"
+  },
+  {
+    "id": "info_critic_loop",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_critic_loop.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185358859491.png"
+  },
+  {
+    "id": "info_priming_unlock",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_priming_unlock.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185413715603.png"
+  },
+  {
+    "id": "info_critique_balance",
+    "status": "ok",
+    "path": "/Users/arvolve/GDRIVE/05_CODE/Gemma4_FineTune_Creativity/Gemma4_FineTune_Creativity/data/output/visuals/info/info_critique_balance.png",
+    "url": "https://api.arvolve.ai/assets/images/gpt-images/gpt_image_2_img1_20260518_185414696855.png"
+  }
+]

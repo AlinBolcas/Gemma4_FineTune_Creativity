@@ -1,0 +1,22 @@
+{
+  "adapter": "all_domains_20260427_202423_e4b_v4",
+  "base": "e4b",
+  "prompt": "how could i name my sausage dog?",
+  "vanilla_output": "That's an exciting decision! Naming a sausage dog (Dachshund) is fun because they have such a distinct, charming, and often comical personality!\n\nTo give you the best suggestions, could you tell me a little bit about your dog? For example:\n\n* **Is he/she male or female?**\n* **What is their personality like?** (Are they goofy, brave, regal, lazy, energetic?)\n* **What color is their coat?** (Black, red, tan, smooth, long-haired?)\n* **What kind of vibe are you going for??** (Cute/Sweet, Funny/Quirky, Elegant/Classic, or something related to their shape?)\n\nIn the meantime, here is a massive list broken down by category to get your brainstorming started! 🌭🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕🐕",
+  "tuned_output_free": "That's a fun task! Sausage dogs have such a distinct, charming, and sometimes comical look!\n\nTo give you the *perfect* name, I need a little more info about your dog! But in the meantime, I've broken down ideas into different vibes:\n\n---\n\n### 🌭🌭🌭 Based on Appearance & Shape\nThese names lean into their long, low, and sausage-like physique.\n\n* **Links** (Simple, direct, and funny)\n* **Frankie** (Classic deli vibe)\n* **Weenie** (Classic, affectionate, and cheeky)\n* **Wurst** (German for sausage)\n* **Linky** (Cute diminutive of \"link\")\n* **Sausage** (Bold, but undeniably accurate)\n* **Hotdog** (If he's a bit goofy)\n\n### 🥓🥓🥓 Based on Food & Cured Meats\nIf you want a gourmet or savory twist.\n\n* **Banger** (British slang for a sausage)\n* **Bratwurst** (A bit long, but very specific)\n* **Sausage Roll** (A sweet, British twist)\n* **Salami** (Elegant and meaty-cured)\n* **Bologna** (A bit silly, but cute)\n* **Mortadella** (Fancy Italian)\n* **Banger** (Short, punchy, and fun)\n\n### 🐾🐾🐾 Based on Personality & Vibe\nDoes he have a specific energy?\n\n* **Wiggles** (If he’s bouncy despite his body)\n* **Winston** (For a dignified little sausage)\n* **Waffles** (If he’s soft and cozy)\n* **Wiggles** (If he’s wiggly and wiggly)\n* **Winston** (For a distinguished little fellow)\n* **Wiggles**",
+  "tuned_output_primed": "## Iteration 1\n### Curiosity\nHidden assumptions::\n- Sausage dog names should be food-related\n- Cute/classic names are the best direction\nKey questions::\n- What is his personality like? (silly, serious, regal, goofy)\n- What is his size/shape like? (long, low, stubby, sausage-like)\n3Branch seeds: ...\n### Creativity\nResearch::\n- Classic sausage dog names: Frank, Rocco, Weiner, Wienie\n- Food names: Sausage, Link, Frank, Bratsy\n- Shape/body reference names: Floof, Tank, Tanky, Loaf\n4Branches:\n- B1: Foody (Frankie, Franky, Franky-Wienie)\n- B2: Shapey (Loafy, Tanky, Sausage, Linky)\n- BC: Regal/Serious (Duke, Winston, Sir Frank)\n4Branches:\n- B1: Foody (Frankie, Franky, Franky-Wienie)\n- BB: Shapey (Loafy, Tanky, Sausage, Linky)\n3Branches:\n- B1: Foody (Frankie, Franky, Franky-Wienie)\n- BB: Shapey (Loafy, Tanky, Sausage, Linky)\nBC: Regal/Serious (Duke, Winston, Sir Frank)\n### Selection\n- BA: Franky (Classic, food-adjacent, cute)\n- BB: Loafy (Direct shape reference, endearing)\n- BC: Winston (Unexpectedly dignified for a wiener)\n### Final Output\n- Franky\n- Loafy\n- Winston",
+  "diff_vanilla_vs_tuned": {
+    "identical": false,
+    "char_diff": 399,
+    "ratio": 0.041
+  },
+  "vanilla_trace_markers": [],
+  "tuned_trace_markers_free": [],
+  "tuned_trace_markers_primed": [
+    "## Iteration",
+    "### Curiosity",
+    "### Creativity",
+    "## Final Output",
+    "Branch seeds:"
+  ]
+}
